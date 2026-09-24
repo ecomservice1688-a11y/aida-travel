@@ -434,10 +434,24 @@ const io = new IntersectionObserver(entries => {
 revealEls.forEach(el => io.observe(el));
 
 /* ---------- Formulaire ---------- */
+function showFormError(msg) {
+  const okBox = document.getElementById("formOk");
+  okBox.textContent = "⚠ " + msg;
+  okBox.style.color = "#D64545";
+  okBox.classList.add("show");
+  return true;
+}
+function phoneDigitsOk(v) { return /^\d{6,15}$/.test(String(v || "").replace(/\D/g, "")); }
 const form = document.getElementById("contactForm");
 form.addEventListener("submit", async e => {
   e.preventDefault();
   const okBox = document.getElementById("formOk");
+  okBox.classList.remove("show");
+  const phoneVal = (document.getElementById("fPhone").value || "").trim();
+  if (phoneVal && !phoneDigitsOk(phoneVal)) {
+    setTimeout(() => { okBox.classList.remove("show"); okBox.style.color = ""; }, 6000);
+    return showFormError("Le numéro de téléphone est incorrect. Vérifiez le chiffres (ex : 661234567).");
+  }
   try {
     const circuitSel = document.getElementById("fCircuit");
     const dateSel = document.getElementById("fDate");
@@ -446,13 +460,14 @@ form.addEventListener("submit", async e => {
     const travellers = nbSel && nbSel.value !== "1" ? " · " + nbSel.value + " voyageur(s)" : "";
     const tripDate = dateSel && dateSel.value
       ? " · Départ " + dateSel.selectedOptions[0].textContent.split(" — ")[0] : "";
+    const phoneFull = (document.getElementById("fCountry") ? document.getElementById("fCountry").value + " " : "") + phoneVal;
     const res = await fetch("/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: document.getElementById("fName").value,
         email: document.getElementById("fEmail").value,
-        phone: document.getElementById("fPhone").value,
+        phone: phoneFull,
         subject: circuitLabel + travellers + tripDate,
         message: document.getElementById("fMsg").value
       })

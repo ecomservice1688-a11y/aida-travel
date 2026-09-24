@@ -23,6 +23,11 @@ async function api(path, opts = {}) {
 
 const qs = obj => new URLSearchParams(obj).toString();
 function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString("fr-FR") : "—"; }
+function fmtDateTime(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleDateString("fr-FR") + " · " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
 function statusHTML(s) { return `<span class="badge ${s}">${STATUS_LABELS[s] || s}</span>`; }
 function fmtPrice(n) { return n.toLocaleString("fr-FR") + " €"; }
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
@@ -53,6 +58,7 @@ $("adminLogin").addEventListener("submit", async e => {
 
 $("logoutBtn").addEventListener("click", () => {
   aToken = ""; localStorage.removeItem(ATOKEN_KEY);
+  stopPolling();
   $("dashView").classList.add("hidden"); $("loginView").classList.remove("hidden");
 });
 
@@ -64,6 +70,7 @@ function enterDash() {
   loadStats(); loadBookings(); loadClients(); loadMessages();
   loadToursAdmin(); loadDepartures(); loadPosts(); loadSiteData(); loadVisits();
   populateManualTours();
+  startPolling();
 }
 
 /* ---------- Stats ---------- */
@@ -135,7 +142,7 @@ async function loadBookings() {
         <td>${b.tripDate || "—"}</td>
         <td>${b.travellers}</td>
         <td>${b.price > 0 ? `<b>${fmtPrice(b.price)}</b>` : `<span class="muted">Sur devis</span>`}</td>
-        <td><small>${fmtDate(b.createdAt)}</small></td>
+        <td><small>${fmtDateTime(b.createdAt)}</small></td>
         <td>
           <select class="status" data-id="${b.id}">
             ${["pending", "confirmed", "paid", "cancelled"].map(s =>
@@ -187,13 +194,20 @@ async function loadMessages() {
     el.innerHTML = list.map(m => `
       <div class="msg-item ${m.read ? "" : "unread"}">
         <div class="m-main">
-          <b>${esc(m.name)}</b> <small>· ${esc(m.email)}</small> ${m.phone ? `<small>· 📞 ${esc(m.phone)}</small>` : ""} ${m.subject ? `<small>· ${esc(m.subject)}</small>` : ""}
-          ${m.validated ? `<span class="badge paid" style="margin-left:6px">Validé → réservation</span>` : ""}
-          <p>${esc(m.message)}</p>
-          <small>${fmtDate(m.createdAt)}</small>
+          <div class="m-head">
+            <b>${esc(m.name)}</b>
+            ${m.validated ? `<span class="badge paid">Validé → réservation</span>` : ""}
+          </div>
+          <div class="client-card">
+            <div class="cf"><span class="c-label">Email</span><a class="c-val" href="mailto:${esc(m.email)}">${esc(m.email)}</a></div>
+            <div class="cf"><span class="c-label">Numéro</span><span class="c-val">${m.phone ? esc(m.phone) : "non renseigné"}</span></div>
+            <div class="cf"><span class="c-label">Recherché</span><span class="c-val">${esc(m.subject || "—")}</span></div>
+            <div class="cf"><span class="c-label">Reçu</span><span class="c-val">${fmtDateTime(m.createdAt)}</span></div>
+          </div>
+          <p class="m-msg">${esc(m.message)}</p>
+          <div class="m-contact">${ctaBtns(m.email, m.phone)}</div>
         </div>
         <div class="m-actions">
-          ${ctaBtns(m.email, m.phone)}
           ${m.validated ? "" : `<button class="btn small wa-green" data-valid="${m.id}">✓ Valider → Réservation</button>`}
           ${m.read ? "" : `<button class="btn small ghost" data-read="${m.id}">Marquer lu</button>`}
           <button class="btn small danger" data-delmsg="${m.id}">Supprimer</button>
@@ -201,6 +215,7 @@ async function loadMessages() {
       </div>`).join("");
     const unread = list.filter(m => !m.read).length;
     $("msgCount").textContent = unread ? `( ${unread} )` : "";
+    if ($("msgUpdated")) $("msgUpdated").textContent = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     el.querySelectorAll("[data-valid]").forEach(b => b.addEventListener("click", async () => {
       try {
         const r = await api("/api/admin/messages/validate", { method: "POST", body: JSON.stringify({ id: b.dataset.valid }) });
@@ -490,9 +505,23 @@ function maskIp(ip) {
   return parts.length === 4 ? parts[0] + "." + parts[1] + ".*.*" : "·".repeat(String(ip).length);
 }
 
+/* ---------- Actualisation automatique (temps réel Messages) ---------- */
+let pollTimer = null;
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(async () => {
+    try {
+      await loadMessages();
+      await loadBookings();
+    } catch (e) { if (e && e.message === "Accès refusé") handleAuth(); }
+  }, 8000);
+}
+function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
 /* ---------- Session invalide ---------- */
 function handleAuth() {
   aToken = ""; localStorage.removeItem(ATOKEN_KEY);
+  stopPolling();
   $("dashView").classList.add("hidden"); $("loginView").classList.remove("hidden");
 }
 

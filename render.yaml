@@ -3,7 +3,7 @@ services:
     name: aida-travel
     runtime: node
     plan: free
-    buildCommand: ""
+    buildCommand: npm install
     startCommand: node server.js
     healthCheckPath: /
     envVars:
@@ -13,3 +13,5 @@ services:
         value: admin
       - key: ADMIN_PASS
         value: admin123
+      - key: MONGODB_URI
+        sync: false

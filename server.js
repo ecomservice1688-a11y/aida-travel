@@ -75,6 +75,47 @@ function seedPosts() {
 }
 
 /* ---------------- Base de données ---------------- */
+const MONGODB_URI = process.env.MONGODB_URI || "";
+let MONGO = null;      // { col } lorsqu'un stockage distant est actif
+let MEM_DB = null;     // copie en mémoire quand MongoDB est actif
+let writeChain = Promise.resolve();
+
+async function initStore() {
+  if (!MONGODB_URI) return; // mode fichier local (repli ou développement)
+  const { MongoClient } = require("mongodb");
+  const client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 6000 });
+  await client.connect();
+  const col = client.db("aida-travel").collection("state");
+  const doc = await col.findOne({ _id: "db" });
+  MEM_DB = ensureSchema(doc && doc.data ? doc.data : { tours: SEED_TOURS, clients: [], bookings: [], messages: [] });
+  if (!doc) await saveDB(MEM_DB);
+  MONGO = { col };
+  console.log("  MongoDB actif : quelques données, " + MEM_DB.tours.length + " circuits, " + MEM_DB.bookings.length + " réservations");
+}
+
+function fileLoadDB() {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(DB_FILE)) {
+    saveDB(ensureSchema({ tours: SEED_TOURS, clients: [], bookings: [], messages: [] }));
+  }
+  return ensureSchema(JSON.parse(fs.readFileSync(DB_FILE, "utf8")));
+}
+
+function loadDB() {
+  if (MONGO && MEM_DB) return ensureSchema(MEM_DB);
+  return fileLoadDB();
+}
+
+function saveDB(db) {
+  if (MONGO) {
+    const snapshot = JSON.parse(JSON.stringify(db));
+    writeChain = writeChain.then(() =>
+      MONGO.col.replaceOne({ _id: "db" }, { _id: "db", data: snapshot }, { upsert: true })
+    ).catch(e => console.error("Erreur écriture MongoDB :", e.message));
+    return;
+  }
+  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+}
 function seedSite() {
   return {
     hero: "img/hero-djanet.jpg",
@@ -259,6 +300,12 @@ api["GET /api/tours"] = (req, res) => {
 };
 
 /* --- Réservations client (sans compte) --- */
+function validPhone(p) {
+  const s = String(p || "").trim();
+  if (!s) return true; // optionnel
+  const d = s.replace(/\D/g, "");
+  return d.length >= 6 && d.length <= 15;
+}
 function upsertClient(db, name, email, phone) {
   email = String(email || "").trim().toLowerCase();
   if (!email) return null;
@@ -287,6 +334,7 @@ api["POST /api/bookings"] = async (req, res, body) => {
     if (client) { cName = client.name; cEmail = client.email; cPhone = client.phone || ""; }
   }
   if (!cName || !cEmail) return send(res, 400, { error: "Nom et email requis" });
+  if (!validPhone(cPhone)) return send(res, 400, { error: "Le numéro de téléphone semble incorrect" });
   const client = upsertClient(db, cName, cEmail, cPhone);
   const booking = {
     id: uid(),
@@ -335,6 +383,7 @@ api["GET /api/bookings"] = (req, res) => {
 api["POST /api/contact"] = async (req, res, body) => {
   const { name, email, message, subject = "", phone = "" } = body;
   if (!name || !email || !message) return send(res, 400, { error: "Champs manquants" });
+  if (!validPhone(phone)) return send(res, 400, { error: "Le numéro de téléphone semble incorrect" });
   const db = loadDB();
   upsertClient(db, name, email, phone);
   db.messages.push({ id: uid(), name, email, phone: String(phone || "").trim(), subject, message, read: false, validated: false, createdAt: new Date().toISOString() });
@@ -470,6 +519,7 @@ api["POST /api/admin/bookings"] = async (req, res, body) => {
   const cEmail = String(email || "").trim();
   const cPhone = String(phone || "").trim();
   if (!cName || !cEmail) return send(res, 400, { error: "Nom et email requis" });
+  if (!validPhone(cPhone)) return send(res, 400, { error: "Le numéro de téléphone semble incorrect" });
   const db = loadDB();
   const tour = tourId ? db.tours.find(x => x.id === tourId) : null;
   const nb = parseInt(travellers, 10) || 1;
@@ -682,6 +732,13 @@ api["POST /api/admin/upload"] = async (req, res, body) => {
   if (buf.length > max) return send(res, 400, { error: "Image trop lourde (max 4 Mo)" });
   const m = MIME_TO_EXT2((mime || "image/jpeg"));
   const ext = m || "png";
+  /* Quand MongoDB est actif (hébergement durable), l'image est stockée dans la base
+     sous forme de data URL pour survivre aux redéploiements. Sinon, fichier local. */
+  if (MONGO) {
+    const dataUrl = "data:" + (mime || "image/jpeg") + ";base64," + data;
+    send(res, 201, { ok: true, url: dataUrl });
+    return;
+  }
   const name = "upload-" + uid().toLowerCase() + "." + ext;
   fs.writeFileSync(path.join(ROOT, "img", name), buf);
   send(res, 201, { ok: true, url: "img/" + name });
@@ -871,11 +928,17 @@ const server = http.createServer((req, res) => {
   serveStatic(req, res);
 });
 
-server.listen(PORT, () => {
-  console.log("==============================================");
-  console.log("  AIDA TRAVEL  ·  serveur démarré");
-  console.log("  Site vitrine : http://localhost:" + PORT);
-  console.log("  Espace admin  : http://localhost:" + PORT + "/admin.html");
-  console.log("  Admin : " + ADMIN.username + " / " + ADMIN.password);
-  console.log("==============================================");
+initStore().catch(e => {
+  console.error("MongoDB injoignable, bascule en mode fichier local :", e.message);
+  MONGO = null; MEM_DB = null;
+}).finally(() => {
+  server.listen(PORT, () => {
+    console.log("==============================================");
+    console.log("  AIDA TRAVEL  ·  serveur démarré");
+    console.log("  Site vitrine : http://localhost:" + PORT);
+    console.log("  Espace admin  : http://localhost:" + PORT + "/admin.html");
+    console.log("  Admin : " + ADMIN.username + " / " + ADMIN.password);
+    console.log("  Stockage : " + (MONGO ? "MongoDB en ligne" : "fichier data/db.json (local)"));
+    console.log("==============================================");
+  });
 });
