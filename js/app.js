@@ -72,7 +72,7 @@ const I18N = {
     "tt.eyebrow": "Avis voyageurs", "tt.title": "Ils ont voyagé avec nous",
     "v1.t": "« Une organisation parfaite et des paysages à couper le souffle. Aida a pensé à tout, jusqu'à notre retour à l'aéroport. »",
     "v1.n": "Claire M.", "v1.c": "France · Tadrart Rouge",
-    "v2.t": "« Moins de 40 €/j. tout compris, et une rencontre humaine inoubliable. Les gravures de Sefar valent le détour. »",
+    "v2.t": "« Tout compris, et une rencontre humaine inoubliable. Les gravures de Sefar valent le détour. »",
     "v2.n": "Markus & Lena", "v2.c": "Germany · Sefar & Essendilène",
     "v3.t": "« El despertar en la cima del Assekrem fue mágico. Equipo atento, comida deliciosa y cero complicaciones. »",
     "v3.n": "Carmen G.", "v3.c": "España · Hoggar & Assekrem",
@@ -85,7 +85,7 @@ const I18N = {
     "fq2.q": "Comment venir à Djanet ou Tamanrasset ?",
     "fq2.a": "<p>Vols domestiques depuis Alger (Air Algérie) vers Djanet (DJG) et Tamanrasset (TMR). Nous organisons le transfert aéroport depuis votre arrivée.</p>",
     "fq3.q": "Quel budget prévoir ?",
-    "fq3.a": "<p>Comptez à partir de ~120 €/jour tout compris (logistique, guide, repas, bivouac) selon la taille du groupe et le niveau de confort choisi.</p>",
+    "fq3.a": "<p>Tout est compris (logistique, guide, repas, bivouac) : nous établissons un devis personnalisé selon la taille du groupe et le niveau de confort choisi.</p>",
     "fq4.q": "Quand partir ?",
     "fq4.a": "<p>Octobre à avril sont les meilleures saisons (températures douces de jour, fraîches la nuit). L'été est réservé aux habitués.</p>",
     "fq5.q": "Le bivouac est-il confortable ?",
@@ -115,7 +115,7 @@ const I18N = {
 
     "dp.eyebrow": "Prochains départs", "dp.title": "Dates garanties · Places limitées",
     "dp.sub": "Départs confirmés en petit groupe. Réservez vite, les places partent en quelques semaines.",
-    "dp.loading": "Chargement des dates…", "dp.book": "Demander un devis", "dp.places": "places", "dp.price": "€ / pers.",
+    "dp.loading": "Chargement des dates…", "dp.book": "Demander un devis", "dp.places": "places",
     "bp.eyebrow": "Carnets de voyage", "bp.title": "Récits & conseils du Sahara",
     "bp.all": "Lire tous les carnets →", "bp.read": "Lire l'article",
     "mp.eyebrow": "Où sommes-nous ?", "mp.title": "Djanet & Tamanrasset sur la carte"
@@ -191,7 +191,7 @@ const I18N = {
     "tt.eyebrow": "Traveller reviews", "tt.title": "They travelled with us",
     "v1.t": "\u201CFlawless organisation and breathtaking landscapes. Aida thought of everything, down to our return to the airport.\u201D",
     "v1.n": "Claire M.", "v1.c": "France · Tadrart Rouge",
-    "v2.t": "\u201CUnder \u20AC40/day all-inclusive, and an unforgettable human encounter. The Sefar carvings are well worth the trip.\u201D",
+    "v2.t": "\u201CAll-inclusive, and an unforgettable human encounter. The Sefar carvings are well worth the trip.\u201D",
     "v2.n": "Markus & Lena", "v2.c": "Germany · Sefar & Essendilène",
     "v3.t": "\u201CEl despertar en la cima del Assekrem fue mágico. Equipo atento, comida deliciosa y cero complicaciones.\u201D",
     "v3.n": "Carmen G.", "v3.c": "Spain · Hoggar & Assekrem",
@@ -204,7 +204,7 @@ const I18N = {
     "fq2.q": "How do I get to Djanet or Tamanrasset?",
     "fq2.a": "<p>Domestic flights from Algiers (Air Algérie) to Djanet (DJG) and Tamanrasset (TMR). We arrange airport transfer from your arrival.</p>",
     "fq3.q": "What budget should I plan?",
-    "fq3.a": "<p>From around \u20AC120/day all-inclusive (logistics, guide, meals, camp) depending on group size and comfort level.</p>",
+    "fq3.a": "<p>Everything is included (logistics, guide, meals, camp): we provide a custom quote based on group size and comfort level.</p>",
     "fq4.q": "When to go?",
     "fq4.a": "<p>October to April are the best seasons (mild days, cool nights). Summer is for the well-acclimatised.</p>",
     "fq5.q": "Is the camp comfortable?",
@@ -234,7 +234,7 @@ const I18N = {
 
     "dp.eyebrow": "Upcoming departures", "dp.title": "Guaranteed dates · Limited spots",
     "dp.sub": "Confirmed small-group departures. Book fast, spots fill within weeks.",
-    "dp.loading": "Loading dates…", "dp.book": "Request a quote", "dp.places": "spots", "dp.price": "€ / pers.",
+    "dp.loading": "Loading dates…", "dp.book": "Request a quote", "dp.places": "spots",
     "bp.eyebrow": "Travel journal", "bp.title": "Stories & tips from the Sahara",
     "bp.all": "Read all the stories →", "bp.read": "Read article",
     "mp.eyebrow": "Where are we?", "mp.title": "Djanet & Tamanrasset on the map"
@@ -310,7 +310,7 @@ const I18N = {
     "tt.eyebrow": "Opiniones de viajeros", "tt.title": "Viajaron con nosotros",
     "v1.t": "«Una organización perfecta y paisajes impresionantes. Aida pensó en todo, hasta la vuelta al aeropuerto.»",
     "v1.n": "Claire M.", "v1.c": "Francia · Tadrart Rouge",
-    "v2.t": "«Menos de 40 €/día todo incluido, y un encuentro humano inolvidable. Los grabados de Sefar merecen el viaje.»",
+    "v2.t": "«Todo incluido, y un encuentro humano inolvidable. Los grabados de Sefar merecen el viaje.»",
     "v2.n": "Markus y Lena", "v2.c": "Alemania · Sefar y Essendilène",
     "v3.t": "«El despertar en la cima del Assekrem fue mágico. Equipo atento, comida deliciosa y cero complicaciones.»",
     "v3.n": "Carmen G.", "v3.c": "España · Hoggar y Assekrem",
@@ -323,7 +323,7 @@ const I18N = {
     "fq2.q": "¿Cómo llegar a Djanet o Tamanrasset?",
     "fq2.a": "<p>Vuelos nacionales desde Argel (Air Algérie) a Djanet (DJG) y Tamanrasset (TMR). Organizamos el traslado desde el aeropuerto a tu llegada.</p>",
     "fq3.q": "¿Qué presupuesto debo prever?",
-    "fq3.a": "<p>Desde unos 120 €/día todo incluido (logística, guía, comidas, campamento) según el tamaño del grupo y el nivel de confort elegido.</p>",
+    "fq3.a": "<p>Todo está incluido (logística, guía, comidas, campamento): elaboramos un presupuesto personalizado según el tamaño del grupo y el nivel de confort elegido.</p>",
     "fq4.q": "¿Cuándo viajar?",
     "fq4.a": "<p>De octubre a abril son las mejores temporadas (días suaves, noches frescas). El verano es para los habituados.</p>",
     "fq5.q": "¿El campamento es cómodo?",
@@ -353,7 +353,7 @@ const I18N = {
 
     "dp.eyebrow": "Próximas salidas", "dp.title": "Fechas garantizadas · Plazas limitadas",
     "dp.sub": "Salidas confirmadas en grupos reducidos. Reserva pronto, ¡las plazas se agotan en semanas!",
-    "dp.loading": "Cargando fechas…", "dp.book": "Solicitar presupuesto", "dp.places": "plazas", "dp.price": "€ / pers.",
+    "dp.loading": "Cargando fechas…", "dp.book": "Solicitar presupuesto", "dp.places": "plazas",
     "bp.eyebrow": "Cuadernos de viaje", "bp.title": "Relatos y consejos del Sáhara",
     "bp.all": "Leer todos los cuadernos →", "bp.read": "Leer artículo",
     "mp.eyebrow": "¿Dónde estamos?", "mp.title": "Djanet y Tamanrasset en el mapa"
@@ -494,7 +494,7 @@ async function loadDepartures() {
           <b>${d.tourTitle}</b>
           <small>${d.tourLoc} · ${d.places} ${T(lang, "dp.places")}</small>
         </div>
-        <div class="dep-price"><b>${d.priceHidden ? "Sur demande" : d.price + " €"}</b><small>${T(lang, "dp.price")}</small></div>
+        <div class="dep-price"><b>Sur demande</b></div>
         <span class="btn btn-primary btn-sm">${T(lang, "dp.book")}</span>
       </a>`).join("");
     box.querySelectorAll(".dep-card").forEach(a => a.addEventListener("click", preselectQuote));
@@ -539,7 +539,7 @@ async function renderTours() {
       <article class="card">
         <div class="card-img" style="background-image:url('${escAttr(t.image)}');"></div>
         <div class="card-body">
-          <div class="card-top">${t.priceHidden ? `<span class="price price-hidden">Sur demande</span>` : `<span class="price">€ ${fmtPrice(t.price)}</span>`}<span class="days">${escHtml(t.days)}</span></div>
+          <div class="card-top"><span class="price price-hidden">Sur demande</span><span class="days">${escHtml(t.days)}</span></div>
           <h3 class="card-title">${escHtml(t.title)}</h3>
           <p class="card-loc">${escHtml(t.loc)}</p>
           <p class="card-desc">${escHtml(t.desc || "")}</p>
@@ -553,7 +553,6 @@ async function renderTours() {
 }
 function escHtml(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 function escAttr(s) { return escHtml(s).replace(/'/g, "&#39;"); }
-function fmtPrice(n) { return Number(n || 0).toLocaleString("fr-FR"); }
 
 /* ---------- Aperçu blog ---------- */
 async function loadBlogPreview() {

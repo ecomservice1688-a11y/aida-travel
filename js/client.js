@@ -19,17 +19,13 @@ async function api(path, opts = {}) {
   return data;
 }
 
-function fmtPrice(n) {
-  return n.toLocaleString("fr-FR") + " €";
-}
-
 /* ---------- Circuits ---------- */
 async function loadTours() {
   try {
     const tours = await api("/api/tours");
     const sel = $("bkTour");
     sel.innerHTML = tours.map(t =>
-      `<option value="${t.id}" data-price="${t.price}" data-pricehidden="${!!t.priceHidden}">${t.title} — ${t.loc}${t.priceHidden ? "" : " — à partir de " + t.price + " €"} (${t.days})</option>`
+      `<option value="${t.id}">${t.title} — ${t.loc}${t.days ? " (" + t.days + ")" : ""}</option>`
     ).join("");
     updateNote();
     loadDepartures();
@@ -55,16 +51,7 @@ async function loadDepartures() {
 }
 
 function updateNote() {
-  const sel = $("bkTour");
-  const opt = sel.selectedOptions[0];
-  const nb = parseInt($("bkTravellers").value, 10) || 1;
-  const hidden = opt ? opt.dataset.pricehidden === "true" : false;
-  if (hidden) {
-    $("bkNote").innerHTML = `Votre demande est envoyée à Aida Travel : <b>devis gratuit sur mesure</b>. Confirmation de disponibilité sous 24 h.`;
-    return;
-  }
-  const price = opt ? parseInt(opt.dataset.price, 10) * nb : 0;
-  $("bkNote").innerHTML = `Estimation : <b>${price.toLocaleString("fr-FR")} €</b> pour ${nb} voyageur(s) (base ~${opt ? opt.dataset.price : "?"} €/personne). Devis précis sous 24 h, sans engagement.`;
+  $("bkNote").innerHTML = `Votre demande est envoyée à Aida Travel : <b>devis gratuit sur mesure</b>. Confirmation de disponibilité et budget précis sous 24 h, sans engagement.`;
 }
 $("bkTour").addEventListener("change", updateNote);
 $("bkTravellers").addEventListener("change", updateNote);
