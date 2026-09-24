@@ -1,12 +1,20 @@
 /* AIDA TRAVEL · Carnets de voyage (blog) */
 const $ = id => document.getElementById(id);
 
+const nav = document.getElementById("nav");
 document.getElementById("burger").addEventListener("click", () => {
-  document.getElementById("nav").classList.toggle("open");
+  document.getElementById("burger").classList.toggle("close");
+  document.getElementById("navLinks").classList.toggle("open");
 });
 document.querySelectorAll(".nav-links a").forEach(a => {
-  a.addEventListener("click", () => document.getElementById("nav").classList.remove("open"));
+  a.addEventListener("click", () => {
+    document.getElementById("burger").classList.remove("close");
+    document.getElementById("navLinks").classList.remove("open");
+  });
 });
+const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 40);
+window.addEventListener("scroll", onScroll);
+onScroll();
 
 async function loadPosts() {
   try {
