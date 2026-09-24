@@ -496,7 +496,7 @@ async function loadDepartures() {
           <b>${d.tourTitle}</b>
           <small>${d.tourLoc} · ${d.places} ${T(lang, "dp.places")}</small>
         </div>
-        <div class="dep-price"><b>${d.price} €</b><small>${T(lang, "dp.price")}</small></div>
+        <div class="dep-price"><b>${d.priceHidden ? "Sur demande" : d.price + " €"}</b><small>${T(lang, "dp.price")}</small></div>
         <span class="btn btn-primary btn-sm">${T(lang, "dp.book")}</span>
       </a>`).join("");
     box.querySelectorAll(".dep-card").forEach(a => a.addEventListener("click", preselectQuote));
@@ -541,7 +541,7 @@ async function renderTours() {
       <article class="card">
         <div class="card-img" style="background-image:url('${escAttr(t.image)}');"></div>
         <div class="card-body">
-          <div class="card-top"><span class="price">€ ${fmtPrice(t.price)}</span><span class="days">${escHtml(t.days)}</span></div>
+          <div class="card-top">${t.priceHidden ? `<span class="price price-hidden">Sur demande</span>` : `<span class="price">€ ${fmtPrice(t.price)}</span>`}<span class="days">${escHtml(t.days)}</span></div>
           <h3 class="card-title">${escHtml(t.title)}</h3>
           <p class="card-loc">${escHtml(t.loc)}</p>
           <p class="card-desc">${escHtml(t.desc || "")}</p>

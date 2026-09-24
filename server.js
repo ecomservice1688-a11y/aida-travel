@@ -96,6 +96,7 @@ function migrateTours(db) {
     if (t.desc === undefined) t.desc = seed ? seed.desc : "";
     if (!Array.isArray(t.tags)) t.tags = seed ? seed.tags.slice() : [];
     if (t.image === undefined) t.image = seed ? seed.image : "img/hero-djanet.jpg";
+    if (t.priceHidden === undefined) t.priceHidden = false;
   });
   return db;
 }
@@ -431,7 +432,7 @@ api["GET /api/departures"] = (req, res) => {
     .filter(x => x.date >= today)
     .map(x => {
       const t = db.tours.find(y => y.id === x.tourId);
-      return { id: x.id, date: x.date, places: x.places, tourId: x.tourId, tourTitle: t ? t.title : "", tourLoc: t ? t.loc : "", price: t ? t.price : 0 };
+      return { id: x.id, date: x.date, places: x.places, tourId: x.tourId, tourTitle: t ? t.title : "", tourLoc: t ? t.loc : "", price: t ? t.price : 0, priceHidden: !!(t && t.priceHidden) };
     })
     .sort((a, b) => a.date.localeCompare(b.date));
   send(res, 200, list);
@@ -488,7 +489,8 @@ api["POST /api/admin/tours"] = async (req, res, body) => {
   const id = slug + "-" + uid().toLowerCase();
   db.tours.push({
     id, title, loc: loc || "Djanet", price: parseFloat(price) || 0, days: days || "",
-    desc: body.desc || "", tags: parseTags(body.tags), image: body.image || "img/hero-djanet.jpg"
+    desc: body.desc || "", tags: parseTags(body.tags), image: body.image || "img/hero-djanet.jpg",
+    priceHidden: body.priceHidden === true
   });
   saveDB(db);
   send(res, 201, { ok: true, tours: db.tours });
@@ -507,6 +509,7 @@ api["PATCH /api/admin/tours"] = async (req, res, body) => {
   if (body.desc !== undefined) t.desc = body.desc;
   if (body.tags !== undefined) t.tags = parseTags(body.tags);
   if (body.image !== undefined) t.image = body.image;
+  if (body.priceHidden !== undefined) t.priceHidden = !!body.priceHidden;
   saveDB(db);
   send(res, 200, { ok: true, tours: db.tours });
 };

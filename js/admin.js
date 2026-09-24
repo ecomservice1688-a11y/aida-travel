@@ -175,7 +175,7 @@ async function loadToursAdmin() {
       <tr>
         <td><img src="${t.image || "img/hero-djanet.jpg"}" alt="" style="width:70px;height:46px;object-fit:cover;border-radius:6px"></td>
         <td><b>${t.title}</b><br><small class="muted">${t.loc || "—"}</small></td>
-        <td><b>${t.price} €</b></td>
+        <td>${t.priceHidden ? `<span class="muted">Sur devis</span>` : `<b>${t.price} €</b>`}</td>
         <td>${t.days || "—"}</td>
         <td style="white-space:nowrap">
           <button class="btn small ghost" data-edit-tour="${t.id}">Modifier</button>
@@ -196,6 +196,7 @@ async function fillTourForm(id) {
   $("tDesc").value = t.desc || ""; $("tTags").value = (t.tags || []).join(" ; ");
   $("tImageUrl").value = t.image || ""; $("tImageFile").value = "";
   $("tPreview").src = t.image || "img/hero-djanet.jpg";
+  if ($("tPriceHidden")) $("tPriceHidden").checked = !!t.priceHidden;
   $("tourSubmit").textContent = "Enregistrer"; $("tourCancel").classList.remove("hidden");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -235,6 +236,7 @@ $("tourForm").addEventListener("submit", async e => {
       title: $("tTitle").value, loc: $("tLoc").value, price: $("tPrice").value, days: $("tDays").value,
       desc: $("tDesc").value, tags: $("tTags").value, image
     };
+    if ($("tPriceHidden")) payload.priceHidden = $("tPriceHidden").checked;
     if (tourEditId) await api("/api/admin/tours/" + tourEditId, { method: "PATCH", body: JSON.stringify(payload) });
     else await api("/api/admin/tours", { method: "POST", body: JSON.stringify(payload) });
     tourEditId = null; pendingImage = null; $("tourForm").reset();
@@ -246,6 +248,7 @@ $("tourForm").addEventListener("submit", async e => {
 $("tourCancel").addEventListener("click", () => {
   tourEditId = null; pendingImage = null; $("tourForm").reset();
   $("tPreview").src = "img/hero-djanet.jpg";
+  if ($("tPriceHidden")) $("tPriceHidden").checked = false;
   $("tourSubmit").textContent = "Ajouter"; $("tourCancel").classList.add("hidden");
 });
 
