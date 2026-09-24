@@ -259,6 +259,19 @@ api["GET /api/tours"] = (req, res) => {
 };
 
 /* --- Réservations client (sans compte) --- */
+function upsertClient(db, name, email, phone) {
+  email = String(email || "").trim().toLowerCase();
+  if (!email) return null;
+  let c = db.clients.find(x => x.email.toLowerCase() === email);
+  if (c) {
+    if (name) c.name = String(name).trim() || c.name;
+    if (phone) c.phone = String(phone).trim();
+    return c;
+  }
+  c = { id: uid(), name: String(name || "").trim() || "Client", email, phone: String(phone || "").trim(), password: "", createdAt: new Date().toISOString() };
+  db.clients.push(c);
+  return c;
+}
 api["POST /api/bookings"] = async (req, res, body) => {
   const { token: t, tourId, date, travellers, message, name, email, phone } = body;
   const db = loadDB();
@@ -274,9 +287,10 @@ api["POST /api/bookings"] = async (req, res, body) => {
     if (client) { cName = client.name; cEmail = client.email; cPhone = client.phone || ""; }
   }
   if (!cName || !cEmail) return send(res, 400, { error: "Nom et email requis" });
+  const client = upsertClient(db, cName, cEmail, cPhone);
   const booking = {
     id: uid(),
-    clientId: sess && sess.type === "client" ? (sess.id || "") : "",
+    clientId: client ? client.id : (sess && sess.type === "client" ? sess.id : ""),
     clientName: cName,
     clientEmail: cEmail,
     clientPhone: cPhone,
@@ -319,10 +333,11 @@ api["GET /api/bookings"] = (req, res) => {
 
 /* --- Messages (formulaire contact) --- */
 api["POST /api/contact"] = async (req, res, body) => {
-  const { name, email, message, subject = "" } = body;
+  const { name, email, message, subject = "", phone = "" } = body;
   if (!name || !email || !message) return send(res, 400, { error: "Champs manquants" });
   const db = loadDB();
-  db.messages.push({ id: uid(), name, email, subject, message, read: false, createdAt: new Date().toISOString() });
+  upsertClient(db, name, email, phone);
+  db.messages.push({ id: uid(), name, email, phone: String(phone || "").trim(), subject, message, read: false, validated: false, createdAt: new Date().toISOString() });
   saveDB(db);
   send(res, 201, { ok: true });
 };
@@ -445,6 +460,81 @@ api["GET /api/admin/clients"] = (req, res) => {
     bookings: db.bookings.filter(b => b.clientId === c.id).length
   }));
   send(res, 200, clients);
+};
+
+/* --- Admin : réservation manuelle --- */
+api["POST /api/admin/bookings"] = async (req, res, body) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const { name, email, phone, tourId, tourTitle, date, travellers, price, message } = body;
+  const cName = String(name || "").trim();
+  const cEmail = String(email || "").trim();
+  const cPhone = String(phone || "").trim();
+  if (!cName || !cEmail) return send(res, 400, { error: "Nom et email requis" });
+  const db = loadDB();
+  const tour = tourId ? db.tours.find(x => x.id === tourId) : null;
+  const nb = parseInt(travellers, 10) || 1;
+  const client = upsertClient(db, cName, cEmail, cPhone);
+  const computed = tour ? tour.price * nb : 0;
+  const finalPrice = price !== undefined && price !== "" && price !== null ? (parseFloat(price) || 0) : computed;
+  const booking = {
+    id: uid(),
+    clientId: client ? client.id : "",
+    clientName: cName,
+    clientEmail: cEmail,
+    clientPhone: cPhone,
+    tourId: tour ? tour.id : "",
+    tourTitle: tour ? tour.title : (String(tourTitle || "Sur mesure").trim() || "Sur mesure"),
+    tourLoc: tour ? tour.loc : "",
+    tripDate: date || "",
+    travellers: nb,
+    message: message || "",
+    price: finalPrice,
+    status: "pending",
+    createdAt: new Date().toISOString()
+  };
+  db.bookings.push(booking);
+  saveDB(db);
+  send(res, 201, { booking });
+};
+
+/* --- Admin : valider un message reçu et le transformer en réservation + client --- */
+api["POST /api/admin/messages/validate"] = async (req, res, body) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const db = loadDB();
+  const m = db.messages.find(x => x.id === body.id);
+  if (!m) return send(res, 404, { error: "Message introuvable" });
+  const subject = String(m.subject || "");
+  const tour = db.tours.find(t =>
+    t.title && subject.toLowerCase().includes(t.title.toLowerCase()) ||
+    t.loc && subject.toLowerCase().includes(String(t.loc).toLowerCase())
+  );
+  const nbMatch = subject.match(/(\d+(?:-\d+)?)\s*voyageurs?/i);
+  const nb = nbMatch ? parseInt(nbMatch[1], 10) : 1;
+  const dateMatch = subject.match(/Départ\s+(.+?)(?:\s*[-–]\s*|$)/i);
+  const tripDate = tour && dateMatch ? dateMatch[1].trim() : (dateMatch ? dateMatch[1].trim() : "");
+  const client = upsertClient(db, m.name, m.email, m.phone);
+  const booking = {
+    id: uid(),
+    clientId: client ? client.id : "",
+    clientName: m.name,
+    clientEmail: m.email,
+    clientPhone: String(m.phone || "").trim(),
+    tourId: tour ? tour.id : "",
+    tourTitle: tour ? tour.title : (subject ? subject : "Demande reçue"),
+    tourLoc: tour ? tour.loc : "",
+    tripDate,
+    travellers: nb,
+    message: m.message || "",
+    price: tour ? tour.price * nb : 0,
+    status: "pending",
+    createdAt: new Date().toISOString()
+  };
+  db.bookings.push(booking);
+  m.read = true;
+  m.validated = true;
+  m.bookingId = booking.id;
+  saveDB(db);
+  send(res, 201, { ok: true, booking });
 };
 
 api["GET /api/admin/messages"] = (req, res) => {

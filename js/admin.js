@@ -25,6 +25,16 @@ const qs = obj => new URLSearchParams(obj).toString();
 function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString("fr-FR") : "—"; }
 function statusHTML(s) { return `<span class="badge ${s}">${STATUS_LABELS[s] || s}</span>`; }
 function fmtPrice(n) { return n.toLocaleString("fr-FR") + " €"; }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function digits(p) { return String(p || "").replace(/\D/g, ""); }
+function ctaBtns(email, phone) {
+  const parts = [];
+  const d = digits(phone);
+  if (d) parts.push(`<a class="btn cta wa" href="https://wa.me/${d}" target="_blank" rel="noopener">WhatsApp</a>`);
+  if (d) parts.push(`<a class="btn cta tel" href="tel:+${d}">Appeler</a>`);
+  if (email) parts.push(`<a class="btn cta mail" href="mailto:${esc(email)}">Email</a>`);
+  return parts.length ? `<div class="cta-wrap">${parts.join("")}</div>` : "";
+}
 
 /* ---------- Auth ---------- */
 $("adminLogin").addEventListener("submit", async e => {
@@ -53,6 +63,7 @@ function enterDash() {
   $("logoutBtn").classList.remove("hidden");
   loadStats(); loadBookings(); loadClients(); loadMessages();
   loadToursAdmin(); loadDepartures(); loadPosts(); loadSiteData(); loadVisits();
+  populateManualTours();
 }
 
 /* ---------- Stats ---------- */
@@ -77,6 +88,31 @@ document.querySelectorAll(".tab[data-tab]").forEach(tab => {
   });
 });
 
+/* ---------- Réservation manuelle ---------- */
+$("manualToggle").addEventListener("click", () => $("manualForm").classList.toggle("hidden"));
+$("mbCancel").addEventListener("click", () => { $("manualForm").classList.add("hidden"); $("manualForm").reset(); });
+async function populateManualTours() {
+  try {
+    const tours = await api("/api/admin/tours");
+    $("mbTour").innerHTML = '<option value="">Sur mesure / autre</option>' + tours.map(t => `<option value="${t.id}">${t.title} — ${t.loc || ""}</option>`).join("");
+  } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
+}
+$("manualForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  try {
+    await api("/api/admin/bookings", {
+      method: "POST",
+      body: JSON.stringify({
+        name: $("mbName").value, email: $("mbEmail").value, phone: $("mbPhone").value,
+        tourId: $("mbTour").value, date: $("mbDate").value,
+        travellers: $("mbTravellers").value || "1", price: $("mbPrice").value, message: $("mbMsg").value
+      })
+    });
+    $("manualForm").reset(); $("manualForm").classList.add("hidden");
+    loadStats(); loadBookings(); loadClients();
+  } catch (err) { alert("Erreur : " + err.message); }
+});
+
 /* ---------- Réservations ---------- */
 async function loadBookings() {
   try {
@@ -86,11 +122,19 @@ async function loadBookings() {
     $("bkEmpty").classList.add("hidden");
     tb.innerHTML = list.map(b => `
       <tr>
-        <td><b>${b.clientName}</b><br><small>${b.clientEmail}${b.clientPhone ? " · " + b.clientPhone : ""}</small></td>
-        <td><b>${b.tourTitle}</b><br><small>${b.tourLoc} · n° ${b.id}</small></td>
+        <td>
+          <b>${esc(b.clientName)}</b><br>
+          <a href="mailto:${esc(b.clientEmail)}" style="color:#1A5FB4">${esc(b.clientEmail)}</a>
+          ${b.clientPhone ? `<br><b>📞 ${esc(b.clientPhone)}</b>` : ""}
+          ${ctaBtns(b.clientEmail, b.clientPhone)}
+        </td>
+        <td>
+          <b>${esc(b.tourTitle)}</b><br><small>${esc(b.tourLoc || "")} · n° ${esc(b.id)}</small>
+          ${b.message ? `<div class="note"><b>Demande :</b> ${esc(b.message)}</div>` : ""}
+        </td>
         <td>${b.tripDate || "—"}</td>
         <td>${b.travellers}</td>
-        <td><b>${fmtPrice(b.price)}</b></td>
+        <td>${b.price > 0 ? `<b>${fmtPrice(b.price)}</b>` : `<span class="muted">Sur devis</span>`}</td>
         <td><small>${fmtDate(b.createdAt)}</small></td>
         <td>
           <select class="status" data-id="${b.id}">
@@ -123,9 +167,10 @@ async function loadClients() {
     $("clEmpty").classList.add("hidden");
     tb.innerHTML = list.map(c => `
       <tr>
-        <td><b>${c.name}</b></td>
-        <td>${c.email}</td>
-        <td>${c.phone || "—"}</td>
+        <td><b>${esc(c.name)}</b></td>
+        <td><a href="mailto:${esc(c.email)}" style="color:#1A5FB4">${esc(c.email)}</a></td>
+        <td>${c.phone ? `<b>📞 ${esc(c.phone)}</b>` : "—"}</td>
+        <td>${ctaBtns(c.email, c.phone)}</td>
         <td>${c.bookings}</td>
         <td><small>${fmtDate(c.createdAt)}</small></td>
       </tr>`).join("");
@@ -142,17 +187,27 @@ async function loadMessages() {
     el.innerHTML = list.map(m => `
       <div class="msg-item ${m.read ? "" : "unread"}">
         <div class="m-main">
-          <b>${m.name}</b> <small>· ${m.email}</small> ${m.subject ? `<small>· ${m.subject}</small>` : ""}
-          <p>${m.message}</p>
+          <b>${esc(m.name)}</b> <small>· ${esc(m.email)}</small> ${m.phone ? `<small>· 📞 ${esc(m.phone)}</small>` : ""} ${m.subject ? `<small>· ${esc(m.subject)}</small>` : ""}
+          ${m.validated ? `<span class="badge paid" style="margin-left:6px">Validé → réservation</span>` : ""}
+          <p>${esc(m.message)}</p>
           <small>${fmtDate(m.createdAt)}</small>
         </div>
         <div class="m-actions">
+          ${ctaBtns(m.email, m.phone)}
+          ${m.validated ? "" : `<button class="btn small wa-green" data-valid="${m.id}">✓ Valider → Réservation</button>`}
           ${m.read ? "" : `<button class="btn small ghost" data-read="${m.id}">Marquer lu</button>`}
           <button class="btn small danger" data-delmsg="${m.id}">Supprimer</button>
         </div>
       </div>`).join("");
     const unread = list.filter(m => !m.read).length;
     $("msgCount").textContent = unread ? `( ${unread} )` : "";
+    el.querySelectorAll("[data-valid]").forEach(b => b.addEventListener("click", async () => {
+      try {
+        const r = await api("/api/admin/messages/validate", { method: "POST", body: JSON.stringify({ id: b.dataset.valid }) });
+        loadMessages(); loadBookings(); loadClients(); loadStats();
+        alert("Message validé : la réservation n° " + r.booking.id + " a été créée et le client est enregistré.");
+      } catch (e) { alert("Erreur : " + e.message); }
+    }));
     el.querySelectorAll("[data-read]").forEach(b => b.addEventListener("click", async () => {
       await api("/api/admin/messages/read", { method: "POST", body: JSON.stringify({ id: b.dataset.read }) });
       loadMessages(); loadStats();

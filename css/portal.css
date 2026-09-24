@@ -58,14 +58,15 @@ a{text-decoration:none;color:inherit}
 }
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--orange-deep);background:#fff}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .msg{font-size:13.5px;margin-top:10px;font-weight:600}
 .msg.ok{color:#1f9d5a}
 .msg.err{color:#D64545}
 
 /* ---- Auth ---- */
 .auth-card{max-width:460px;margin:26px auto}
-.tabs{display:flex;gap:4px;background:var(--sand);padding:4px;border-radius:999px;margin-bottom:24px}
-.tab{flex:1;text-align:center;padding:10px;border-radius:999px;background:none;border:none;font-weight:600;cursor:pointer;font-family:var(--font-body);color:#8A7A63;font-size:14px;transition:.2s}
+.tabs{display:flex;gap:4px;background:var(--sand);padding:5px;border-radius:16px;margin-bottom:24px;flex-wrap:wrap}
+.tab{flex:1 1 auto;min-width:118px;text-align:center;padding:10px 14px;border-radius:12px;background:none;border:none;font-weight:600;cursor:pointer;font-family:var(--font-body);color:#8A7A63;font-size:14px;transition:.2s;white-space:nowrap}
 .tab.active{background:var(--orange-deep);color:#fff}
 .hidden{display:none!important}
 .center{text-align:center}
@@ -89,7 +90,7 @@ td small{color:#9A8A74}
 select.status{border:1.5px solid var(--sand-3);padding:6px 10px;border-radius:8px;font-family:var(--font-body);font-size:12.5px;background:var(--cream)}
 
 /* ---- Stats admin ---- */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:28px}
 .stat-card{background:#fff;border:1px solid var(--sand-2);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
 .stat-card .n{font-family:var(--font-head);font-size:30px;color:var(--orange-deep);font-weight:700}
 .stat-card .l{font-size:12px;color:#8A7A63;text-transform:uppercase;letter-spacing:1px}
@@ -124,11 +125,34 @@ select.status{border:1.5px solid var(--sand-3);padding:6px 10px;border-radius:8p
 .thanks-actions{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
 .thanks-actions .btn{min-width:220px}
 
+/* ---- Boutons contact client ---- */
+.contact-btns{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.btn.cta{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font-size:11.5px;border-radius:8px;background:var(--sand);color:var(--night);border:1px solid var(--sand-3);text-decoration:none}
+.btn.cta:hover{background:var(--sand-2);transform:none}
+.btn.cta.wa{background:#E1F6E8;border-color:#BCE6CC;color:#17713f}
+.btn.cta.wa:hover{background:#cdeeda}
+.btn.cta.tel{background:#E3F0FF;border-color:#BFD9F5;color:#1A5FB4}
+.btn.cta.tel:hover{background:#d2e7ff}
+.btn.cta.mail{background:#F6E7D3;border-color:#E7C896;color:#8A5A2B}
+.btn.cta.mail:hover{background:#efdcbe}
+.btn.wa-green{background:#E1F6E8;color:#17713f;border:1.5px solid #BCE6CC}
+.btn.wa-green:hover{background:#cdeeda;color:#145c36}
+td .cta-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.note{background:var(--sand);border-left:3px solid var(--orange-deep);border-radius:8px;padding:8px 11px;font-size:12.5px;color:#6B5B48;margin-top:8px;max-width:340px;white-space:normal}
+.note b{color:var(--orange-deep)}
+
+@media(max-width:820px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid3{grid-template-columns:1fr}
+}
+
 @media(max-width:700px){
   .stats{grid-template-columns:repeat(2,1fr)}
   .row2{grid-template-columns:1fr}
   .pbar-in{flex-wrap:wrap;justify-content:center;text-align:center}
   .msg-item{flex-direction:column}
+  .tabs{flex-wrap:wrap}
+  .tab{min-width:calc(50% - 4px)}
 }
 
 /* ---- Visites ---- */

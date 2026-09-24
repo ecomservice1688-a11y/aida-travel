@@ -452,6 +452,7 @@ form.addEventListener("submit", async e => {
       body: JSON.stringify({
         name: document.getElementById("fName").value,
         email: document.getElementById("fEmail").value,
+        phone: document.getElementById("fPhone").value,
         subject: circuitLabel + travellers + tripDate,
         message: document.getElementById("fMsg").value
       })
