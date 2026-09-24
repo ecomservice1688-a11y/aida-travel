@@ -220,7 +220,7 @@ function buildInvoice(booking, tour) {
   lines.push({ size: 11, x: 50, y: 536, text: "Statut : " + (booking.status === "paid" ? "Payé" : booking.status === "confirmed" ? "Confirmé" : "En attente") });
   lines.push({ size: 9, x: 50, y: 500, text: "Paiement : virement bancaire ou espèces. Un acompte de 30% confirme la réservation." });
   lines.push({ size: 9, x: 50, y: 486, text: "Logistique, guide, repas et bivouac inclus. Vols et visa non inclus." });
-  lines.push({ size: 9, x: 50, y: 60, text: "Aida Travel — Djanet, Wilaya d'Illizi, Algérie — contact@aidatravel-dz.com — +213 6XX XX XX XX" });
+  lines.push({ size: 9, x: 50, y: 60, text: "Aida Travel — Djanet, Wilaya d'Illizi, Algérie — contact@aidatravel-dz.com — +213 542 94 56 37" });
   return makePdf({ lines });
 }
 
