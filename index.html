@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aida Travel · Djanet &amp; Tamanrasset · Sahara Algérien</title>
+<meta name="description" content="Aida Travel : circuits authentiques dans le Sahara algérien. Djanet (Tassili n'Ajjer, Tadrart Rouge, Sefar) et Tamanrasset (Hoggar, Assekrem). Guides locaux touareg.">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ NAVBAR ============ -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#home" class="brand">
+      <img src="logo.svg" alt="Aida Travel logo">
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#home" data-i18n="nav.home">Accueil</a>
+      <a href="#tours" data-i18n="nav.tours">Circuits</a>
+      <a href="#about" data-i18n="nav.about">L'agence</a>
+      <a href="#why" data-i18n="nav.why">Pourquoi nous</a>
+      <a href="#team" data-i18n="nav.team">Équipe</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
+      <a href="blog.html" data-i18n="nav.blog">Carnets</a>
+      <a href="client.html" class="btn btn-ghost btn-sm" data-i18n="nav.client">Espace client</a>
+      <a href="#contact" class="btn btn-primary btn-sm" data-i18n="nav.contact">Contact</a>
+    </nav>
+    <div class="nav-right">
+      <div class="lang" id="langSwitch">
+        <button class="lang-btn active" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="es">ES</button>
+      </div>
+      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="home">
+  <div class="hero-bg" style="background-image:url('img/hero-djanet.jpg');"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-badge" data-i18n="hero.badge">Agence de voyage · Djanet &amp; Tamanrasset</p>
+    <h1 class="hero-title" data-i18n="hero.title">Au cœur du Sahara algérien</h1>
+    <p class="hero-sub" data-i18n="hero.sub">Dunes dorées, art rupestre millénaire, nuits sous les étoiles : vivez une aventure authentique avec Aida et son équipe touarègue.</p>
+    <div class="hero-cta">
+      <a href="#tours" class="btn btn-primary" data-i18n="hero.cta1">Découvrir les circuits</a>
+      <a href="#contact" class="btn btn-ghost" data-i18n="hero.cta2">Demander un devis</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-n">8+</span><span class="stat-l" data-i18n="s1">années d'expérience</span></div>
+    <div class="stat"><span class="stat-n">15+</span><span class="stat-l" data-i18n="s2">circuits dans le Sahara</span></div>
+    <div class="stat"><span class="stat-n">500+</span><span class="stat-l" data-i18n="s3">voyageurs accompagnés</span></div>
+    <div class="stat"><span class="stat-n">100%</span><span class="stat-l" data-i18n="s4">guides locaux touareg</span></div>
+  </div>
+  <a href="#tours" class="hero-scroll" aria-label="scroll">⌄</a>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section class="section about" id="about">
+  <div class="container about-grid">
+    <div class="about-media">
+      <img src="img/dromadaire.jpg" alt="Dromadaire dans le Sahara algérien">
+      <div class="about-tag"><span data-i18n="about.tagline">Séjours privés &amp; petits groupes</span></div>
+    </div>
+    <div class="about-text">
+      <p class="eyebrow" data-i18n="about.eyebrow">Notre histoire</p>
+      <h2 class="h2" data-i18n="about.title">Aida, une passion du désert née à Djanet</h2>
+      <p data-i18n="about.p1">Née entre les dunes du Tassili n'Ajjer et les montagnes du Hoggar, Aida a grandi au rythme des caravanes. Elle a fondé <strong>Aida Travel</strong> pour faire découvrir son Sahara autrement : loin des clichés, proche des hommes.</p>
+      <p data-i18n="about.p2">Notre équipe de guides touareg, cuisiniers et chameliers organise des circuits sur mesure à <strong>Djanet</strong> et <strong>Tamanrasset</strong> : expéditions en 4x4, treks à dos de dromadaire, bivouacs de luxe ou randonnées nomades.</p>
+      <p data-i18n="about.p3">Nous vous accompagnons avant et pendant votre séjour : conseil, logistique, assistance visa et accueil à l'aéroport.</p>
+      <div class="about-feats">
+        <div class="feat"><span>🏜️</span><b data-i18n="af1">Tassili n'Ajjer</b><small data-i18n="af1s">UNESCO · art rupestre</small></div>
+        <div class="feat"><span>⛰️</span><b data-i18n="af2">Hoggar &amp; Assekrem</b><small data-i18n="af2s">Tamanrasset</small></div>
+        <div class="feat"><span>🪬</span><b data-i18n="af3">Cuisine &amp; culture</b><small data-i18n="af3s">rencontres nomades</small></div>
+      </div>
+      <p class="about-sign" data-i18n="about.sign">— Aida, fondatrice d'Aida Travel</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOURS ============ -->
+<section class="section tours" id="tours">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="tours.eyebrow">Nos circuits</p>
+      <h2 class="h2" data-i18n="tours.title">Explorez Djanet &amp; Tamanrasset</h2>
+      <p class="section-sub" data-i18n="tours.sub">Chaque circuit peut être privatisé et adapté à votre niveau, vos dates et votre budget.</p>
+    </div>
+
+    <div class="cards" id="tourCards">
+      <article class="card">
+        <div class="card-img" style="background-image:url('img/tadrart.jpg');"></div>
+        <div class="card-body">
+          <div class="card-top"><span class="price">€ 340</span><span class="days" data-i18n="t1.days">3 jours / 2 nuits</span></div>
+          <h3 class="card-title" data-i18n="t1.title">Tadrart Rouge</h3>
+          <p class="card-loc" data-i18n="t1.loc">Djanet · Aurès rouge du Tassili</p>
+          <p class="card-desc" data-i18n="t1.desc">Arches, canyons et dunes ocre à l'aube. Le joyau des photographes, à moins d'une heure de Djanet.</p>
+          <div class="tags">
+            <span data-i18n="t1.t1">4x4</span><span data-i18n="t1.t2">Trek</span><span data-i18n="t1.t3">Bivouac</span>
+          </div>
+          <a class="btn btn-outline btn-block quote-link" data-tour="tadrart-rouge" data-i18n="tours.book" href="#contact">Demander un devis</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-img" style="background-image:url('img/sefar.jpg');"></div>
+        <div class="card-body">
+          <div class="card-top"><span class="price">€ 520</span><span class="days" data-i18n="t2.days">5 jours / 4 nuits</span></div>
+          <h3 class="card-title" data-i18n="t2.title">Sefar &amp; Essendilène</h3>
+          <p class="card-loc" data-i18n="t2.loc">Djanet · Art rupestre du Tassili</p>
+          <p class="card-desc" data-i18n="t2.desc">Le "Grand Dieu de Sefar" et la plus belle galerie d'art rupestre préhistorique au monde.</p>
+          <div class="tags">
+            <span data-i18n="t2.t1">Art rupestre</span><span data-i18n="t2.t2">Chameau</span><span data-i18n="t2.t3">Guide local</span>
+          </div>
+          <a class="btn btn-outline btn-block quote-link" data-tour="sefar-essendilene" data-i18n="tours.book" href="#contact">Demander un devis</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-img" style="background-image:url('img/iherir.jpg');"></div>
+        <div class="card-body">
+          <div class="card-top"><span class="price">€ 290</span><span class="days" data-i18n="t3.days">2 jours / 1 nuit</span></div>
+          <h3 class="card-title" data-i18n="t3.title">Iherir &amp; l'oasis cachée</h3>
+          <p class="card-loc" data-i18n="t3.loc">Djanet · Oasis et gueltas</p>
+          <p class="card-desc" data-i18n="t3.desc">Palmiers, mares naturelles et falaise de Tan Alouf. Le poumon vert du désert.</p>
+          <div class="tags">
+            <span data-i18n="t3.t1">Oasis</span><span data-i18n="t3.t2">Photo</span><span data-i18n="t3.t3">Pique-nique</span>
+          </div>
+          <a class="btn btn-outline btn-block quote-link" data-tour="iherir-oasis" data-i18n="tours.book" href="#contact">Demander un devis</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-img" style="background-image:url('img/hoggar.jpg');"></div>
+        <div class="card-body">
+          <div class="card-top"><span class="price">€ 640</span><span class="days" data-i18n="t4.days">6 jours / 5 nuits</span></div>
+          <h3 class="card-title" data-i18n="t4.title">Hoggar &amp; Assekrem</h3>
+          <p class="card-loc" data-i18n="t4.loc">Tamanrasset · Monts Atakor</p>
+          <p class="card-desc" data-i18n="t4.desc">Lever de soleil mythique à 2 700 m, chaos volcanique et légende de l'ermitage du Père de Foucauld.</p>
+          <div class="tags">
+            <span data-i18n="t4.t1">4x4</span><span data-i18n="t4.t2">Sommets</span><span data-i18n="t4.t3">Lever de soleil</span>
+          </div>
+          <a class="btn btn-outline btn-block quote-link" data-tour="hoggar-assekrem" data-i18n="tours.book" href="#contact">Demander un devis</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-img" style="background-image:url('img/sebiba.jpg');"></div>
+        <div class="card-body">
+          <div class="card-top"><span class="price">€ 480</span><span class="days" data-i18n="t5.days">4 jours / 3 nuits</span></div>
+          <h3 class="card-title" data-i18n="t5.title">Fête de la Sebiba</h3>
+          <p class="card-loc" data-i18n="t5.loc">Djanet · Chaque année</p>
+          <p class="card-desc" data-i18n="t5.desc">Danse millénaire, tambours et étoffe blanche : un moment unique au monde, au cœur de l'oasis.</p>
+          <div class="tags">
+            <span data-i18n="t5.t1">Culture</span><span data-i18n="t5.t2">Festival</span><span data-i18n="t5.t3">Dates 2026</span>
+          </div>
+          <a class="btn btn-outline btn-block quote-link" data-tour="sebiba" data-i18n="tours.book" href="#contact">Demander un devis</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-img" style="background-image:url('img/traversee.jpg');"></div>
+        <div class="card-body">
+          <div class="card-top"><span class="price">€ 1 150</span><span class="days" data-i18n="t6.days">9 jours / 8 nuits</span></div>
+          <h3 class="card-title" data-i18n="t6.title">Grande traversée Djanet–Tamanrasset</h3>
+          <p class="card-loc" data-i18n="t6.loc">Tassili &amp; Hoggar · Caravane</p>
+          <p class="card-desc" data-i18n="t6.desc">La grande aventure nomade : piste, dunes et montagnes entre les deux capitales du Sahara algérien.</p>
+          <div class="tags">
+            <span data-i18n="t6.t1">Caravane</span><span data-i18n="t6.t2">Expédition</span><span data-i18n="t6.t3">Aventure</span>
+          </div>
+          <a class="btn btn-outline btn-block quote-link" data-tour="grande-traversee" data-i18n="tours.book" href="#contact">Demander un devis</a>
+        </div>
+      </article>
+    </div>
+    <p class="tours-note" data-i18n="tours.note">* Tarifs par personne, transport de/vers l'aéroport inclus. Demandez votre devis personnalisé →</p>
+  </div>
+</section>
+
+<!-- ============ PROCHAINS DÉPARTS ============ -->
+<section class="section departures" id="departures">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="dp.eyebrow">Prochains départs</p>
+      <h2 class="h2" data-i18n="dp.title">Dates garanties · Places limitées</h2>
+      <p class="section-sub" data-i18n="dp.sub">Départs confirmés en petit groupe. Réservez vite, les places partent en quelques semaines.</p>
+    </div>
+    <div class="dep-list" id="depList">
+      <p class="dep-loading" data-i18n="dp.loading">Chargement des dates…</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="section why" id="why">
+  <div class="container">
+    <div class="section-head light">
+      <p class="eyebrow" data-i18n="why.eyebrow">Pourquoi Aida Travel ?</p>
+      <h2 class="h2" data-i18n="why.title">L'expérience aura une âme, pas qu'un prix</h2>
+    </div>
+    <div class="grid4">
+      <div class="box"><div class="ico">🪬</div><h4 data-i18n="r1.t">Équipe 100% locale</h4><p data-i18n="r1.d">Guides touareg qui connaissent chaque guelta et chaque gravure.</p></div>
+      <div class="box"><div class="ico">🧳</div><h4 data-i18n="r2.t">Sur mesure</h4><p data-i18n="r2.d">Privatif ou petit groupe, chaque circuit est adapté à vous.</p></div>
+      <div class="box"><div class="ico">🛂</div><h4 data-i18n="r3.t">Assistance visa</h4><p data-i18n="r3.d">Fin de l'invitation et conseils pour votre dossier algérien.</p></div>
+      <div class="box"><div class="ico">🚙</div><h4 data-i18n="r4.t">Logistique complète</h4><p data-i18n="r4.d">4x4, tentes, cuisine, eau : vous n'avez qu'à profiter.</p></div>
+      <div class="box"><div class="ico">🌙</div><h4 data-i18n="r5.t">Nuits en bivouac</h4><p data-i18n="r5.d">Sous un ciel parmi les plus nets de la planète.</p></div>
+      <div class="box"><div class="ico">🆘</div><h4 data-i18n="r6.t">Assistance 24/7</h4><p data-i18n="r6.d">On répond avant, pendant et après votre voyage.</p></div>
+      <div class="box"><div class="ico">🍲</div><h4 data-i18n="r7.t">Cuisine nomade</h4><p data-i18n="r7.d">Tajines, mechoui et thé au feu de camp, préparés sur place.</p></div>
+      <div class="box"><div class="ico">🌍</div><h4 data-i18n="r8.t">Tourisme responsable</h4><p data-i18n="r8.d">Petits groupes, déchets ramenés, revenus aux familles locales.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUOTE STRIP ============ -->
+<section class="quote">
+  <div class="container">
+    <p class="quote-text" data-i18n="quote.text">« Le désert, ce n'est pas un vide. C'est un espace qui donne à chaque étoile sa place. »</p>
+    <span class="quote-author" data-i18n="quote.author">— Proverbe touareg</span>
+  </div>
+</section>
+
+<!-- ============ TEAM ============ -->
+<section class="section team" id="team">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="team.eyebrow">Notre équipe</p>
+      <h2 class="h2" data-i18n="team.title">Les visages de votre voyage</h2>
+    </div>
+    <div class="grid3">
+      <div class="member">
+        <div class="member-img" style="background-image:url('https://images.unsplash.com/photo-1526406915894-7bcd65f60845?auto=format&fit=crop&w=500&q=70');"></div>
+        <h4 data-i18n="m1.n">Aida</h4>
+        <p class="member-role" data-i18n="m1.r">Fondatrice &amp; organisatrice</p>
+      </div>
+      <div class="member">
+        <div class="member-img" style="background-image:url('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=70');"></div>
+        <h4 data-i18n="m2.n">Achour</h4>
+        <p class="member-role" data-i18n="m2.r">Guide &amp; Amghar du Tassili</p>
+      </div>
+      <div class="member">
+        <div class="member-img" style="background-image:url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=70');"></div>
+        <h4 data-i18n="m3.n">Bébé</h4>
+        <p class="member-role" data-i18n="m3.r">Guide du Hoggar &amp; chauffeur 4x4</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="section testimonials">
+  <div class="container">
+    <div class="section-head light">
+      <p class="eyebrow" data-i18n="tt.eyebrow">Avis voyageurs</p>
+      <h2 class="h2" data-i18n="tt.title">Ils ont voyagé avec nous</h2>
+    </div>
+    <div class="grid3">
+      <div class="review"><span class="stars">★★★★★</span><p data-i18n="v1.t">"Une organisation parfaite et des paysages à couper le souffle. Aida a pensé à tout, jusqu'à notre retour à l'aéroport."</p><b data-i18n="v1.n">Claire M.</b><small data-i18n="v1.c">France · Tadrart Rouge</small></div>
+      <div class="review"><span class="stars">★★★★★</span><p data-i18n="v2.t">"Moins de 40 €/j. tout compris, et une rencontre humaine inoubliable. Les gravures de Sefar valent le détour."</p><b data-i18n="v2.n">Markus &amp; Lena</b><small data-i18n="v2.c">Germany · Sefar &amp; Essendilène</small></div>
+      <div class="review"><span class="stars">★★★★★</span><p data-i18n="v3.t">"El despertar en la cima del Assekrem fue mágico. Equipo atento, comida deliciosa y cero complicaciones."</p><b data-i18n="v3.n">Carmen G.</b><small data-i18n="v3.c">España · Hoggar &amp; Assekrem</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CARNETS (BLOG) ============ -->
+<section class="section blogpreview" id="blog">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="bp.eyebrow">Carnets de voyage</p>
+      <h2 class="h2" data-i18n="bp.title">Récits &amp; conseils du Sahara</h2>
+    </div>
+    <div class="cards" id="blogPreview"></div>
+    <p class="tours-note" style="margin-top:26px"><a href="blog.html" data-i18n="bp.all">Lire tous les carnets →</a></p>
+  </div>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section class="section gallery" id="gallery">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="gal.eyebrow">Galerie</p>
+      <h2 class="h2" data-i18n="gal.title">Le Sahara en images</h2>
+    </div>
+  </div>
+  <div class="gallery-grid">
+    <img src="img/hero-djanet.jpg" alt="Coucher de soleil sur Djanet">
+    <img src="img/tadrart.jpg" alt="Route de la Tadrart Rouge, Djanet">
+    <img src="img/sefar.jpg" alt="Le Grand Dieu de Sefar, Tassili n'Ajjer">
+    <img src="img/dunes-detail.jpg" alt="Dunes du Tassili n'Ajjer">
+    <img src="img/hoggar.jpg" alt="Lever de soleil sur l'Assekrem, Hoggar">
+    <img src="img/assekrem.jpg" alt="Sommets de l'Assekrem au coucher du soleil">
+    <img src="img/essendilene.jpg" alt="Paysages d'Essendilène, Djanet">
+    <img src="img/dromadaire.jpg" alt="Dromadaire dans le Sahara algérien">
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="section faq" id="faq">
+  <div class="container container-narrow">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="faq.eyebrow">FAQ</p>
+      <h2 class="h2" data-i18n="faq.title">Questions fréquentes</h2>
+    </div>
+    <div class="acc">
+      <div class="acc-item">
+        <button class="acc-q" data-i18n="fq1.q">Faut-il un visa pour l'Algérie ?</button>
+        <div class="acc-a" data-i18n="fq1.a"><p>Oui pour la plupart des nationalités. Aida Travel vous fournit l'attestation d'invitation et vous guide dans votre demande auprès de l'ambassade.</p></div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-q" data-i18n="fq2.q">Comment venir à Djanet ou Tamanrasset ?</button>
+        <div class="acc-a" data-i18n="fq2.a"><p>Vols domestiques depuis Alger (Air Algérie) vers Djanet (DJG) et Tamanrasset (TMR). Nous organisons le transfert aéroport depuis votre arrivée.</p></div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-q" data-i18n="fq3.q">Quel budget prévoir ?</button>
+        <div class="acc-a" data-i18n="fq3.a"><p>Comptez à partir de ~120 €/jour tout compris (logistique, guide, repas, bivouac) selon la taille du groupe et le niveau de confort choisi.</p></div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-q" data-i18n="fq4.q">Quand partir ?</button>
+        <div class="acc-a" data-i18n="fq4.a"><p>Octobre à avril sont les meilleures saisons (températures douces de jour, fraîches la nuit). L'été est réservé aux habitués.</p></div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-q" data-i18n="fq5.q">Le bivouac est-il confortable ?</button>
+        <div class="acc-a" data-i18n="fq5.a"><p>Tentes à deux personnes, matelas, duvets, cuisine de camp et douches solaires. Option "bivouac confort" avec lits et tentes spacieuses disponibles.</p></div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-q" data-i18n="fq6.q">Peut-on partir en solo ?</button>
+        <div class="acc-a" data-i18n="fq6.a"><p>Oui ! Nous organisons la rencontre avec un petit groupe international ou vous accompagnons en voyage privé. Tout est possible.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CARTE ============ -->
+<section class="section mapsec" id="map">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow" data-i18n="mp.eyebrow">Où sommes-nous ?</p>
+      <h2 class="h2" data-i18n="mp.title">Djanet &amp; Tamanrasset sur la carte</h2>
+      <div class="map-btns" id="mapBtns">
+        <button class="btn btn-sm active" data-q="Djanet, Algérie">Djanet</button>
+        <button class="btn btn-sm" data-q="Tamanrasset, Algérie">Tamanrasset</button>
+        <button class="btn btn-sm" data-q="Tadrart Rouge, Algérie">Tadrart Rouge</button>
+        <button class="btn btn-sm" data-q="Assekrem, Algérie">Assekrem</button>
+      </div>
+    </div>
+    <div class="map-frame">
+      <iframe id="mapFrame" title="Carte Djanet et Tamanrasset" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://maps.google.com/maps?q=Djanet,Alg%C3%A9rie&t=&z=7&ie=UTF8&iwloc=&output=embed"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section class="section contact" id="contact">
+  <div class="container contact-grid">
+    <div class="contact-info">
+      <p class="eyebrow" data-i18n="ct.eyebrow">Contact</p>
+      <h2 class="h2" data-i18n="ct.title">Parlons de votre voyage</h2>
+      <p class="ct-sub" data-i18n="ct.sub">Réponse sous 24h, devis gratuit et sans engagement.</p>
+      <ul class="ct-list">
+        <li><span>📍</span><b data-i18n="ct.l1">Djanet (bureau)</b><small data-i18n="ct.l1s">Wilaya d'Illizi · Algérie</small></li>
+        <li><span>📍</span><b data-i18n="ct.l2">Tamanrasset</b><small data-i18n="ct.l2s">Point de départ des circuits Hoggar</small></li>
+        <li><span>📞</span><b>+213 6 XX XX XX XX</b><small>WhatsApp / Viber</small></li>
+        <li><span>✉️</span><b>contact@aidatravel-dz.com</b></li>
+        <li><span>🕘</span><b data-i18n="ct.l5">Tous les jours</b><small data-i18n="ct.l5s">8h – 20h</small></li>
+      </ul>
+      <div class="socials">
+        <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7.5c0-1 .5-1.8 1.9-1.8H17V2.2S15.7 2 14.4 2C11.8 2 10 3.6 10 6.6V10H7v4h3v8h3z"/></svg></a>
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3.2-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.9.1s-3.6 0-4.8-.1c-3.3-.1-4.8-1.7-4.9-4.9-.1-1.3-.1-1.6-.1-4.8s0-3.6.1-4.8C2.4 4 4 2.4 7.2 2.3 8.4 2.2 8.8 2.2 12 2.2zm0 3.6a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4zm0 10.2a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-10.5a1.4 1.4 0 1 0 0-2.9 1.4 1.4 0 0 0 0 2.9z"/></svg></a>
+        <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.6 6.7a4.8 4.8 0 0 1-3.4-1.4 4.8 4.8 0 0 1-1.4-3.4h-3.1v12.8c0 1.4-1.1 2.5-2.5 2.5a2.5 2.5 0 0 1 0-5c.4 0 .7.1 1 .2V9a5.8 5.8 0 0 0-1-.1A5.6 5.6 0 0 0 4.7 14.5c0 3.1 2.5 5.6 5.6 5.6a5.6 5.6 0 0 0 5.6-5.6V9.1a7.8 7.8 0 0 0 4.5 1.4V6.7h-.8z"/></svg></a>
+        <a href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.2 14.2c-.2.6-1.2 1.1-1.7 1.2-.5 0-1 .2-3.2-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.1.1-.3.3-.1.6.1.3.6 1 1.3 1.7.9.9 1.6 1.1 1.9 1.3.2.1.4.1.5-.1l.8-1c.2-.3.4-.2.6-.1l2 .9c.3.2.4.3.5.4 0 .2 0 .9-.3 1.5z"/></svg></a>
+      </div>
+      <a href="https://wa.me/213660000000" class="btn btn-wa" data-i18n="ct.wa">💬 Discuter sur WhatsApp</a>
+    </div>
+    <form class="contact-form" id="contactForm">
+      <div class="form-row">
+        <div class="field"><label data-i18n="f.name.placeholder">Nom complet *</label><input type="text" id="fName" required></div>
+        <div class="field"><label data-i18n="f.email.placeholder">Email *</label><input type="email" id="fEmail" required></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label data-i18n="f.phone.placeholder">Téléphone / WhatsApp</label><input type="tel" id="fPhone"></div>
+        <div class="field"><label data-i18n="f.nb.placeholder">Nombre de voyageurs</label><select id="fNb"><option>1</option><option>2</option><option>3-4</option><option>5-6</option><option>7+</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label data-i18n="f.circuit.placeholder">Circuit souhaité</label><select id="fCircuit"><option value="tadrart-rouge" data-i18n="fo.0">Tadrart Rouge</option><option value="sefar-essendilene" data-i18n="fo.1">Sefar &amp; Essendilène</option><option value="iherir-oasis" data-i18n="fo.2">Iherir &amp; oasis</option><option value="hoggar-assekrem" data-i18n="fo.3">Hoggar &amp; Assekrem</option><option value="sebiba" data-i18n="fo.4">Fête de la Sebiba</option><option value="grande-traversee" data-i18n="fo.5">Grande traversée</option><option value="custom" data-i18n="fo.6">Sur mesure / autre</option></select></div>
+        <div class="field"><label data-i18n="f.date.placeholder">Date de départ souhaitée</label><select id="fDate"><option value="" data-i18n="f.date.flex">Date flexible</option></select></div>
+      </div>
+      <div class="field"><label data-i18n="f.msg.placeholder">Votre message</label><textarea id="fMsg" rows="4"></textarea></div>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="f.send">Envoyer la demande</button>
+      <p class="form-ok" id="formOk" data-i18n="f.ok">✅ Merci ! Votre demande a bien été envoyée. Nous revenons vers vous sous 24h.</p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <img src="logo.svg" alt="Aida Travel">
+      <p data-i18n="foot.p">Circuits authentiques dans le Sahara algérien. Djanet · Tassili n'Ajjer · Tamanrasset · Hoggar.</p>
+    </div>
+    <div class="footer-col">
+      <h5 data-i18n="foot.nav">Navigation</h5>
+      <a href="#home" data-i18n="nav.home">Accueil</a>
+      <a href="#tours" data-i18n="nav.tours">Circuits</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
+      <a href="blog.html" data-i18n="nav.blog">Carnets</a>
+      <a href="client.html" data-i18n="nav.client">Espace client</a>
+      <a href="#contact" data-i18n="nav.contact">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h5 data-i18n="foot.dest">Destinations</h5>
+      <span data-i18n="foot.d1">Tadrart Rouge</span>
+      <span data-i18n="foot.d2">Sefar &amp; Essendilène</span>
+      <span data-i18n="foot.d3">Hoggar &amp; Assekrem</span>
+      <span data-i18n="foot.d4">Fête de la Sebiba</span>
+    </div>
+    <div class="footer-col">
+      <h5 data-i18n="foot.ct">Contact</h5>
+      <span>Djanet, Algérie</span>
+      <span>+213 6 XX XX XX XX</span>
+      <span>contact@aidatravel-dz.com</span>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Aida Travel · <span data-i18n="foot.rights">Tous droits réservés.</span> · <a href="admin.html" class="foot-admin">Admin</a></p>
+  </div>
+</footer>
+
+<!-- WhatsApp float -->
+<a href="https://wa.me/213660000000" class="wa-float" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.2 14.2c-.2.6-1.2 1.1-1.7 1.2-.5 0-1 .2-3.2-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.1.1-.3.3-.1.6.1.3.6 1 1.3 1.7.9.9 1.6 1.1 1.9 1.3.2.1.4.1.5-.1l.8-1c.2-.3.4-.2.6-.1l2 .9c.3.2.4.3.5.4 0 .2 0 .9-.3 1.5z"/></svg>
+</a>
+
+<script src="js/app.js"></script>
+</body>
+</html>

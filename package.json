@@ -1,0 +1,11 @@
+{
+  "name": "aida-travel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Site Aida Travel · Djanet & Tamanrasset · vitrine + espace client + admin",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

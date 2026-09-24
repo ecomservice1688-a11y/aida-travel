@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administration · Aida Travel</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+
+<header class="pbar">
+  <div class="pbar-in">
+    <a href="/index.html" class="brand"><img src="logo.svg" alt="Aida Travel"><b>AIDA&nbsp;·&nbsp;ADMIN</b></a>
+    <div class="actions">
+      <span class="user" id="barUser"></span>
+      <button class="logout hidden" id="logoutBtn">Déconnexion</button>
+      <a class="btn ghost small" href="/index.html">← Site</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ======= LOGIN ======= -->
+  <div id="loginView">
+    <div class="card auth-card">
+      <p class="eyebrow center">AidA Travel</p>
+      <h1 class="h2 center">Espace administrateur</h1>
+      <p class="muted center" style="margin-bottom:20px">Gérez les réservations, les clients et les messages du site.</p>
+      <form id="adminLogin">
+        <div class="field"><label>Utilisateur *</label><input type="text" id="adUser" required></div>
+        <div class="field"><label>Mot de passe *</label><input type="password" id="adPass" required></div>
+        <button type="submit" class="btn block">Se connecter</button>
+        <p class="msg err hidden" id="adMsg"></p>
+      </form>
+      <p class="muted center" style="margin-top:14px;font-size:12px">Test : <b>admin</b> / <b>admin123</b></p>
+    </div>
+  </div>
+
+  <!-- ======= DASHBOARD ======= -->
+  <div id="dashView" class="hidden">
+
+    <div class="stats" id="statsRow"></div>
+
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="bookings" type="button">Réservations</button>
+        <button class="tab" data-tab="clients" type="button">Clients</button>
+        <button class="tab" data-tab="messages" type="button">Messages <span id="msgCount"></span></button>
+        <button class="tab" data-tab="tours" type="button">Circuits</button>
+        <button class="tab" data-tab="departures" type="button">Départs</button>
+        <button class="tab" data-tab="posts" type="button">Articles</button>
+      </div>
+
+      <!-- Réservations -->
+      <div id="tab-bookings">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Client</th><th>Circuit</th><th>Date</th><th>Voyageurs</th><th>Prix</th><th>Reçue le</th><th>Statut</th></tr></thead>
+            <tbody id="bkTable"></tbody>
+          </table>
+        </div>
+        <p class="empty hidden" id="bkEmpty">Aucune réservation pour le moment.</p>
+      </div>
+
+      <!-- Clients -->
+      <div id="tab-clients" class="hidden">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Réservations</th><th>Inscrit le</th></tr></thead>
+            <tbody id="clTable"></tbody>
+          </table>
+        </div>
+        <p class="empty hidden" id="clEmpty">Aucun client inscrit pour le moment.</p>
+      </div>
+
+      <!-- Messages -->
+      <div id="tab-messages" class="hidden">
+        <div id="msgList"></div>
+        <p class="empty hidden" id="msgEmpty">Aucun message reçu.</p>
+      </div>
+
+      <!-- Circuits -->
+      <div id="tab-tours" class="hidden">
+        <p class="muted" style="margin-bottom:16px">Gérez les circuits affichés sur le site (réservation client et départs).</p>
+        <form id="tourForm" class="row2" style="margin-bottom:22px;align-items:end">
+          <div class="field"><label>Titre *</label><input type="text" id="tTitle" required></div>
+          <div class="field"><label>Lieu</label><input type="text" id="tLoc"></div>
+          <div class="field"><label>Prix € (par personne) *</label><input type="number" id="tPrice" min="0" required></div>
+          <div class="field"><label>Durée</label><input type="text" id="tDays" placeholder="ex : 3 jours / 2 nuits"></div>
+          <button type="submit" class="btn" id="tourSubmit">Ajouter</button>
+          <button type="button" class="btn ghost hidden" id="tourCancel">Annuler</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Titre</th><th>Lieu</th><th>Prix</th><th>Durée</th><th></th></tr></thead>
+            <tbody id="toursTable"></tbody>
+          </table>
+        </div>
+        <p class="empty hidden" id="toursEmpty">Aucun circuit. Ajoutez le premier.</p>
+      </div>
+
+      <!-- Départs -->
+      <div id="tab-departures" class="hidden">
+        <p class="muted" style="margin-bottom:16px">Les dates visibles dans la section « Prochains départs » de l'accueil.</p>
+        <form id="depForm" class="row2" style="margin-bottom:22px;align-items:end">
+          <div class="field"><label>Circuit *</label><select id="depTour" required></select></div>
+          <div class="field"><label>Date *</label><input type="date" id="depDate" required></div>
+          <div class="field"><label>Places</label><input type="number" id="depPlaces" min="1" value="8"></div>
+          <button type="submit" class="btn" id="depSubmit">Ajouter</button>
+          <button type="button" class="btn ghost hidden" id="depCancel">Annuler</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Circuit</th><th>Places</th><th></th></tr></thead>
+            <tbody id="depsTable"></tbody>
+          </table>
+        </div>
+        <p class="empty hidden" id="depsEmpty">Aucun départ programmé.</p>
+      </div>
+
+      <!-- Articles -->
+      <div id="tab-posts" class="hidden">
+        <p class="muted" style="margin-bottom:16px">Les articles apparaissent sur la page <b>carnets de voyage</b> (blog).</p>
+        <form id="postForm" style="margin-bottom:22px">
+          <div class="field"><label>Titre *</label><input type="text" id="pTitle" required></div>
+          <div class="field"><label>Extrait (accroche)</label><input type="text" id="pExcerpt"></div>
+          <div class="field"><label>Auteur</label><input type="text" id="pAuthor" value="Aida"></div>
+          <div class="field"><label>Contenu * (séparez les paragraphes par une ligne vide)</label><textarea id="pContent" rows="8" required></textarea></div>
+          <button type="submit" class="btn" id="postSubmit">Publier</button>
+          <button type="button" class="btn ghost hidden" id="postCancel">Annuler</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Titre</th><th>Auteur</th><th>Date</th><th></th></tr></thead>
+            <tbody id="postsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
