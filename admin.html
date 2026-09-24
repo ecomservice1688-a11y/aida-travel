@@ -54,6 +54,7 @@
         <button class="tab" data-tab="tours" type="button">Circuits</button>
         <button class="tab" data-tab="departures" type="button">Départs</button>
         <button class="tab" data-tab="posts" type="button">Articles</button>
+        <button class="tab" data-tab="site" type="button">Site</button>
       </div>
 
       <!-- Réservations -->
@@ -87,17 +88,33 @@
       <!-- Circuits -->
       <div id="tab-tours" class="hidden">
         <p class="muted" style="margin-bottom:16px">Gérez les circuits affichés sur le site (réservation client et départs).</p>
-        <form id="tourForm" class="row2" style="margin-bottom:22px;align-items:end">
-          <div class="field"><label>Titre *</label><input type="text" id="tTitle" required></div>
-          <div class="field"><label>Lieu</label><input type="text" id="tLoc"></div>
-          <div class="field"><label>Prix € (par personne) *</label><input type="number" id="tPrice" min="0" required></div>
-          <div class="field"><label>Durée</label><input type="text" id="tDays" placeholder="ex : 3 jours / 2 nuits"></div>
-          <button type="submit" class="btn" id="tourSubmit">Ajouter</button>
-          <button type="button" class="btn ghost hidden" id="tourCancel">Annuler</button>
+        <form id="tourForm" style="margin-bottom:22px">
+          <div class="row2">
+            <div class="field"><label>Titre *</label><input type="text" id="tTitle" required></div>
+            <div class="field"><label>Lieu</label><input type="text" id="tLoc"></div>
+            <div class="field"><label>Prix € (par personne) *</label><input type="number" id="tPrice" min="0" required></div>
+            <div class="field"><label>Durée</label><input type="text" id="tDays" placeholder="ex : 3 jours / 2 nuits"></div>
+          </div>
+          <div class="field"><label>Description (accroche affichée sur le site)</label><textarea id="tDesc" rows="2"></textarea></div>
+          <div class="row2">
+            <div class="field"><label>Étiquettes (3 max, séparées par ;)</label><input type="text" id="tTags" placeholder="4x4 ; Trek ; Bivouac"></div>
+            <div class="field"><label>Image (URL)</label><input type="text" id="tImageUrl" placeholder="img/...jpg ou https://..."></div>
+          </div>
+          <div class="field">
+            <label>Photo — ou envoyer une image</label>
+            <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+              <img id="tPreview" alt="" style="width:110px;height:70px;object-fit:cover;border-radius:8px;background:#e5e0d8">
+              <input type="file" id="tImageFile" accept="image/png,image/jpeg,image/webp,image/gif">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button type="submit" class="btn" id="tourSubmit">Ajouter</button>
+            <button type="button" class="btn ghost hidden" id="tourCancel">Annuler</button>
+          </div>
         </form>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Titre</th><th>Lieu</th><th>Prix</th><th>Durée</th><th></th></tr></thead>
+            <thead><tr><th>Photo</th><th>Titre</th><th>Prix</th><th>Durée</th><th></th></tr></thead>
             <tbody id="toursTable"></tbody>
           </table>
         </div>
@@ -140,6 +157,62 @@
             <tbody id="postsTable"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- Site -->
+      <div id="tab-site" class="hidden">
+        <p class="muted" style="margin-bottom:16px">Modifiez les photos du site : accueil, à-propos, équipe et galerie.</p>
+        <form id="siteForm">
+          <div class="row2" style="margin-bottom:8px">
+            <div class="field">
+              <label>Photo d'accueil (grande bannière)</label>
+              <img id="sHeroPrev" alt="" style="width:120px;height:70px;object-fit:cover;border-radius:8px;background:#e5e0d8">
+              <input type="text" id="sHeroUrl" placeholder="img/... ou https://..." style="margin-top:8px">
+              <input type="file" id="sHeroFile" accept="image/*" style="margin-top:6px">
+            </div>
+            <div class="field">
+              <label>Photo section « L'agence »</label>
+              <img id="sAboutPrev" alt="" style="width:120px;height:70px;object-fit:cover;border-radius:8px;background:#e5e0d8">
+              <input type="text" id="sAboutUrl" placeholder="img/... ou https://..." style="margin-top:8px">
+              <input type="file" id="sAboutFile" accept="image/*" style="margin-top:6px">
+            </div>
+          </div>
+
+          <h4 style="margin:16px 0 10px">Équipe (3 membres)</h4>
+          <div class="grid3">
+            <div class="field">
+              <label>Membre 1</label>
+              <img id="sTeam0Prev" alt="" style="width:100%;height:70px;object-fit:cover;border-radius:8px;background:#e5e0d8">
+              <input type="text" id="sTeam0Name" placeholder="Nom" style="margin-top:8px">
+              <input type="text" id="sTeam0Role" placeholder="Rôle" style="margin-top:6px">
+              <input type="text" id="sTeam0Photo" placeholder="URL photo" style="margin-top:6px">
+              <input type="file" id="sTeam0File" accept="image/*" style="margin-top:6px">
+            </div>
+            <div class="field">
+              <label>Membre 2</label>
+              <img id="sTeam1Prev" alt="" style="width:100%;height:70px;object-fit:cover;border-radius:8px;background:#e5e0d8">
+              <input type="text" id="sTeam1Name" placeholder="Nom" style="margin-top:8px">
+              <input type="text" id="sTeam1Role" placeholder="Rôle" style="margin-top:6px">
+              <input type="text" id="sTeam1Photo" placeholder="URL photo" style="margin-top:6px">
+              <input type="file" id="sTeam1File" accept="image/*" style="margin-top:6px">
+            </div>
+            <div class="field">
+              <label>Membre 3</label>
+              <img id="sTeam2Prev" alt="" style="width:100%;height:70px;object-fit:cover;border-radius:8px;background:#e5e0d8">
+              <input type="text" id="sTeam2Name" placeholder="Nom" style="margin-top:8px">
+              <input type="text" id="sTeam2Role" placeholder="Rôle" style="margin-top:6px">
+              <input type="text" id="sTeam2Photo" placeholder="URL photo" style="margin-top:6px">
+              <input type="file" id="sTeam2File" accept="image/*" style="margin-top:6px">
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:18px">
+            <label>Galerie « Le Sahara en images » (une URL par ligne, max 12)</label>
+            <textarea id="sGallery" rows="8"></textarea>
+          </div>
+          <button type="submit" class="btn">Enregistrer le site</button>
+          <span class="muted" id="siteSaved" style="margin-left:12px"></span>
+        </form>
       </div>
 
     </div>

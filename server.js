@@ -21,12 +21,18 @@ const ADMIN = {
 };
 
 const SEED_TOURS = [
-  { id: "tadrart-rouge",     title: "Tadrart Rouge",                    loc: "Djanet",        price: 340,  days: "3 jours / 2 nuits" },
-  { id: "sefar-essendilene", title: "Sefar & Essendilène",              loc: "Djanet",        price: 520,  days: "5 jours / 4 nuits" },
-  { id: "iherir-oasis",      title: "Iherir & l'oasis cachée",          loc: "Djanet",        price: 290,  days: "2 jours / 1 nuit" },
-  { id: "hoggar-assekrem",   title: "Hoggar & Assekrem",                loc: "Tamanrasset",   price: 640,  days: "6 jours / 5 nuits" },
-  { id: "sebiba",            title: "Fête de la Sebiba",                loc: "Djanet",        price: 480,  days: "4 jours / 3 nuits" },
-  { id: "grande-traversee",  title: "Grande traversée Djanet–Tamanrasset", loc: "Tassili & Hoggar", price: 1150, days: "9 jours / 8 nuits" }
+  { id: "tadrart-rouge",     title: "Tadrart Rouge",                    loc: "Djanet",        price: 340,  days: "3 jours / 2 nuits", image: "img/tadrart.jpg",
+    desc: "Arches, canyons et dunes ocre à l'aube. Le joyau des photographes, à moins d'une heure de Djanet.", tags: ["4x4", "Trek", "Bivouac"] },
+  { id: "sefar-essendilene", title: "Sefar & Essendilène",              loc: "Djanet",        price: 520,  days: "5 jours / 4 nuits", image: "img/sefar.jpg",
+    desc: "Le « Grand Dieu de Sefar » et la plus belle galerie d'art rupestre préhistorique au monde.", tags: ["Art rupestre", "Chameau", "Guide local"] },
+  { id: "iherir-oasis",      title: "Iherir & l'oasis cachée",          loc: "Djanet",        price: 290,  days: "2 jours / 1 nuit", image: "img/iherir.jpg",
+    desc: "Palmiers, mares naturelles et falaise de Tan Alouf. Le poumon vert du désert.", tags: ["Oasis", "Photo", "Pique-nique"] },
+  { id: "hoggar-assekrem",   title: "Hoggar & Assekrem",                loc: "Tamanrasset",   price: 640,  days: "6 jours / 5 nuits", image: "img/hoggar.jpg",
+    desc: "Lever de soleil mythique à 2 700 m, chaos volcanique et ermitage du Père de Foucauld.", tags: ["4x4", "Sommets", "Lever de soleil"] },
+  { id: "sebiba",            title: "Fête de la Sebiba",                loc: "Djanet",        price: 480,  days: "4 jours / 3 nuits", image: "img/sebiba.jpg",
+    desc: "Danse millénaire, tambours et étoffe blanche : un moment unique au monde, au cœur de l'oasis.", tags: ["Culture", "Festival", "Dates 2026"] },
+  { id: "grande-traversee",  title: "Grande traversée Djanet–Tamanrasset", loc: "Tassili & Hoggar", price: 1150, days: "9 jours / 8 nuits", image: "img/traversee.jpg",
+    desc: "La grande aventure nomade : piste, dunes et montagnes entre les deux capitales du Sahara algérien.", tags: ["Caravane", "Expédition", "Aventure"] }
 ];
 
 const STATUSES = ["pending", "confirmed", "paid", "cancelled"];
@@ -69,6 +75,30 @@ function seedPosts() {
 }
 
 /* ---------------- Base de données ---------------- */
+function seedSite() {
+  return {
+    hero: "img/hero-djanet.jpg",
+    about: "img/dromadaire.jpg",
+    team: [
+      { name: "Aida",  role: "Fondatrice & organisatrice", photo: "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?auto=format&fit=crop&w=500&q=70" },
+      { name: "Achour", role: "Guide & Amghar du Tassili", photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=70" },
+      { name: "Bébé",  role: "Guide du Hoggar & chauffeur 4x4", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=70" }
+    ],
+    gallery: [
+      "img/hero-djanet.jpg", "img/tadrart.jpg", "img/sefar.jpg", "img/dunes-detail.jpg",
+      "img/hoggar.jpg", "img/assekrem.jpg", "img/essendilene.jpg", "img/dromadaire.jpg"
+    ]
+  };
+}
+function migrateTours(db) {
+  db.tours.forEach(t => {
+    const seed = SEED_TOURS.find(s => s.id === t.id);
+    if (t.desc === undefined) t.desc = seed ? seed.desc : "";
+    if (!Array.isArray(t.tags)) t.tags = seed ? seed.tags.slice() : [];
+    if (t.image === undefined) t.image = seed ? seed.image : "img/hero-djanet.jpg";
+  });
+  return db;
+}
 function ensureSchema(db) {
   if (!Array.isArray(db.tours)) db.tours = SEED_TOURS;
   if (!Array.isArray(db.clients)) db.clients = [];
@@ -76,6 +106,8 @@ function ensureSchema(db) {
   if (!Array.isArray(db.messages)) db.messages = [];
   if (!Array.isArray(db.departures)) db.departures = seedDepartures();
   if (!Array.isArray(db.posts)) db.posts = seedPosts();
+  if (!db.site) db.site = seedSite();
+  migrateTours(db);
   return db;
 }
 function loadDB() {
@@ -420,7 +452,48 @@ api["GET /api/posts/id"] = (req, res) => {
   send(res, 200, p);
 };
 
+/* --- Site (public) --- */
+api["GET /api/site"] = (req, res) => {
+  send(res, 200, loadDB().site);
+};
+
+/* --- Site (admin) --- */
+api["PATCH /api/admin/site"] = async (req, res, body) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const db = loadDB();
+  const s = db.site || seedSite();
+  if (typeof body.hero === "string") s.hero = body.hero;
+  if (typeof body.about === "string") s.about = body.about;
+  if (Array.isArray(body.team)) s.team = body.team.slice(0, 6).map(m => ({
+    name: String(m.name || ""), role: String(m.role || ""), photo: String(m.photo || "img/hero-djanet.jpg")
+  }));
+  if (Array.isArray(body.gallery)) s.gallery = body.gallery.map(x => String(x)).filter(Boolean).slice(0, 12);
+  db.site = s;
+  saveDB(db);
+  send(res, 200, { ok: true, site: db.site });
+};
+
 /* --- Admin : tours --- */
+function parseTags(v) {
+  if (Array.isArray(v)) return v.filter(Boolean).slice(0, 6);
+  if (typeof v === "string") return v.split(/[,;]/).map(s => s.trim()).filter(Boolean).slice(0, 6);
+  return [];
+}
+api["POST /api/admin/tours"] = async (req, res, body) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const { title, loc, price, days } = body;
+  if (!title) return send(res, 400, { error: "Titre requis" });
+  const db = loadDB();
+  const slug = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "tour";
+  const id = slug + "-" + uid().toLowerCase();
+  db.tours.push({
+    id, title, loc: loc || "Djanet", price: parseFloat(price) || 0, days: days || "",
+    desc: body.desc || "", tags: parseTags(body.tags), image: body.image || "img/hero-djanet.jpg"
+  });
+  saveDB(db);
+  send(res, 201, { ok: true, tours: db.tours });
+};
+
 api["PATCH /api/admin/tours"] = async (req, res, body) => {
   if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
   const id = new URL(req.url, "http://x").pathname.split("/").pop();
@@ -431,9 +504,30 @@ api["PATCH /api/admin/tours"] = async (req, res, body) => {
   if (body.loc !== undefined) t.loc = body.loc;
   if (body.price !== undefined) t.price = parseFloat(body.price) || t.price;
   if (body.days !== undefined) t.days = body.days;
+  if (body.desc !== undefined) t.desc = body.desc;
+  if (body.tags !== undefined) t.tags = parseTags(body.tags);
+  if (body.image !== undefined) t.image = body.image;
   saveDB(db);
   send(res, 200, { ok: true, tours: db.tours });
 };
+
+api["POST /api/admin/upload"] = async (req, res, body) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const { data, mime } = body;
+  if (!data) return send(res, 400, { error: "Image manquante" });
+  const buf = Buffer.from(data, "base64");
+  const max = 4 * 1024 * 1024;
+  if (!buf.length) return send(res, 400, { error: "Fichier vide" });
+  if (buf.length > max) return send(res, 400, { error: "Image trop lourde (max 4 Mo)" });
+  const m = MIME_TO_EXT2((mime || "image/jpeg"));
+  const ext = m || "png";
+  const name = "upload-" + uid().toLowerCase() + "." + ext;
+  fs.writeFileSync(path.join(ROOT, "img", name), buf);
+  send(res, 201, { ok: true, url: "img/" + name });
+};
+function MIME_TO_EXT2(m) {
+  return { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" }[m] || null;
+}
 
 api["DELETE /api/admin/tours"] = (req, res) => {
   if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });

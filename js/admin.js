@@ -52,7 +52,7 @@ function enterDash() {
   $("barUser").textContent = "admin";
   $("logoutBtn").classList.remove("hidden");
   loadStats(); loadBookings(); loadClients(); loadMessages();
-  loadToursAdmin(); loadDepartures(); loadPosts();
+  loadToursAdmin(); loadDepartures(); loadPosts(); loadSiteData();
 }
 
 /* ---------- Stats ---------- */
@@ -72,7 +72,7 @@ document.querySelectorAll(".tab[data-tab]").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".tab[data-tab]").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
-    ["bookings", "clients", "messages", "tours", "departures", "posts"].forEach(t => $("tab-" + t).classList.toggle("hidden", t !== tab.dataset.tab));
+    ["bookings", "clients", "messages", "tours", "departures", "posts", "site"].forEach(t => $("tab-" + t).classList.toggle("hidden", t !== tab.dataset.tab));
   });
 });
 
@@ -173,8 +173,8 @@ async function loadToursAdmin() {
     $("toursEmpty").classList.toggle("hidden", tours.length > 0);
     tb.innerHTML = tours.map(t => `
       <tr>
-        <td><b>${t.title}</b></td>
-        <td>${t.loc || "—"}</td>
+        <td><img src="${t.image || "img/hero-djanet.jpg"}" alt="" style="width:70px;height:46px;object-fit:cover;border-radius:6px"></td>
+        <td><b>${t.title}</b><br><small class="muted">${t.loc || "—"}</small></td>
         <td><b>${t.price} €</b></td>
         <td>${t.days || "—"}</td>
         <td style="white-space:nowrap">
@@ -191,7 +191,11 @@ async function fillTourForm(id) {
   const t = tours.find(x => x.id === id);
   if (!t) return;
   tourEditId = id;
+  pendingImage = null;
   $("tTitle").value = t.title; $("tLoc").value = t.loc; $("tPrice").value = t.price; $("tDays").value = t.days;
+  $("tDesc").value = t.desc || ""; $("tTags").value = (t.tags || []).join(" ; ");
+  $("tImageUrl").value = t.image || ""; $("tImageFile").value = "";
+  $("tPreview").src = t.image || "img/hero-djanet.jpg";
   $("tourSubmit").textContent = "Enregistrer"; $("tourCancel").classList.remove("hidden");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -200,17 +204,48 @@ async function delTour(id) {
   await api("/api/admin/tours/" + id, { method: "DELETE" });
   loadToursAdmin(); loadTourSelect();
 }
+
+let pendingImage = null;
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve({ data: String(r.result).split(",")[1] || "", mime: file.type });
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+$("tImageFile").addEventListener("change", e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { $("tPreview").src = r.result; pendingImage = f; };
+  r.readAsDataURL(f);
+});
+
 $("tourForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const payload = { title: $("tTitle").value, loc: $("tLoc").value, price: $("tPrice").value, days: $("tDays").value };
-  if (tourEditId) await api("/api/admin/tours/" + tourEditId, { method: "PATCH", body: JSON.stringify(payload) });
-  else await api("/api/admin/tours", { method: "POST", body: JSON.stringify(payload) });
-  tourEditId = null; $("tourForm").reset();
-  $("tourSubmit").textContent = "Ajouter"; $("tourCancel").classList.add("hidden");
-  loadToursAdmin(); loadTourSelect();
+  try {
+    let image = $("tImageUrl").value.trim();
+    if (pendingImage) {
+      const up = await readFileAsBase64(pendingImage);
+      const resp = await api("/api/admin/upload", { method: "POST", body: JSON.stringify(up) });
+      image = resp.url;
+    }
+    const payload = {
+      title: $("tTitle").value, loc: $("tLoc").value, price: $("tPrice").value, days: $("tDays").value,
+      desc: $("tDesc").value, tags: $("tTags").value, image
+    };
+    if (tourEditId) await api("/api/admin/tours/" + tourEditId, { method: "PATCH", body: JSON.stringify(payload) });
+    else await api("/api/admin/tours", { method: "POST", body: JSON.stringify(payload) });
+    tourEditId = null; pendingImage = null; $("tourForm").reset();
+    $("tPreview").src = "img/hero-djanet.jpg";
+    $("tourSubmit").textContent = "Ajouter"; $("tourCancel").classList.add("hidden");
+    loadToursAdmin(); loadTourSelect();
+  } catch (err) { alert("Erreur : " + err.message); }
 });
 $("tourCancel").addEventListener("click", () => {
-  tourEditId = null; $("tourForm").reset();
+  tourEditId = null; pendingImage = null; $("tourForm").reset();
+  $("tPreview").src = "img/hero-djanet.jpg";
   $("tourSubmit").textContent = "Ajouter"; $("tourCancel").classList.add("hidden");
 });
 
@@ -309,6 +344,55 @@ $("postForm").addEventListener("submit", async e => {
 $("postCancel").addEventListener("click", () => {
   postEditId = null; $("postForm").reset();
   $("postSubmit").textContent = "Publier"; $("postCancel").classList.add("hidden");
+});
+
+/* ---------- Site (admin) ---------- */
+function bindSiteUpload(fileId, urlId, prevId) {
+  $(fileId).addEventListener("change", async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+      const up = await readFileAsBase64(f);
+      const resp = await api("/api/admin/upload", { method: "POST", body: JSON.stringify(up) });
+      $(urlId).value = resp.url;
+      $(prevId).src = resp.url;
+    } catch (err) { alert("Erreur upload : " + err.message); }
+  });
+}
+async function loadSiteData() {
+  try {
+    const s = await api("/api/site");
+    bindSiteUpload("sHeroFile", "sHeroUrl", "sHeroPrev");
+    bindSiteUpload("sAboutFile", "sAboutUrl", "sAboutPrev");
+    for (let i = 0; i < 3; i++) bindSiteUpload("sTeam" + i + "File", "sTeam" + i + "Photo", "sTeam" + i + "Prev");
+    $("sHeroUrl").value = s.hero || ""; $("sHeroPrev").src = s.hero || "";
+    $("sAboutUrl").value = s.about || ""; $("sAboutPrev").src = s.about || "";
+    (s.team || []).forEach((m, i) => {
+      if (i > 2) return;
+      $("sTeam" + i + "Name").value = m.name || "";
+      $("sTeam" + i + "Role").value = m.role || "";
+      $("sTeam" + i + "Photo").value = m.photo || "";
+      $("sTeam" + i + "Prev").src = m.photo || "";
+    });
+    $("sGallery").value = (s.gallery || []).join("\n");
+  } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
+}
+$("siteForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const team = [0, 1, 2].map(i => ({
+    name: $("sTeam" + i + "Name").value,
+    role: $("sTeam" + i + "Role").value,
+    photo: $("sTeam" + i + "Photo").value.trim()
+  }));
+  const gallery = $("sGallery").value.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  try {
+    await api("/api/admin/site", {
+      method: "PATCH",
+      body: JSON.stringify({ hero: $("sHeroUrl").value.trim(), about: $("sAboutUrl").value.trim(), team, gallery })
+    });
+    const ok = $("siteSaved"); ok.textContent = "✅ Site mis à jour !";
+    setTimeout(() => { ok.textContent = ""; }, 4000);
+  } catch (err) { alert("Erreur : " + err.message); }
 });
 
 /* ---------- Session invalide ---------- */

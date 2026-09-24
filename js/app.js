@@ -378,6 +378,8 @@ function applyLang(lang) {
   localStorage.setItem("aida_lang", lang);
   loadDepartures();
   loadBlogPreview();
+  renderTours();
+  loadSite();
 }
 
 /* ---------- Sélecteur de langue ---------- */
@@ -517,15 +519,43 @@ function focusQuoteForm() {
   const form = document.getElementById("contactForm");
   if (form) setTimeout(() => form.scrollIntoView({ behavior: "smooth", block: "center" }), 120);
 }
-document.querySelectorAll(".quote-link").forEach(a => {
-  a.addEventListener("click", function (ev) {
-    if (this.dataset.tour) {
-      const sel = document.getElementById("fCircuit");
-      if (sel) sel.value = this.dataset.tour;
-      focusQuoteForm();
-    }
-  });
+document.addEventListener("click", e => {
+  const a = e.target.closest(".quote-link[data-tour]");
+  if (a) {
+    const sel = document.getElementById("fCircuit");
+    if (sel) sel.value = a.dataset.tour;
+    focusQuoteForm();
+  }
 });
+
+/* ---------- Circuits (gérés par l'admin) ---------- */
+async function renderTours() {
+  const box = document.getElementById("tourCards");
+  if (!box) return;
+  try {
+    const res = await fetch("/api/tours");
+    if (!res.ok) throw new Error();
+    const tours = await res.json();
+    if (!tours.length) { box.innerHTML = `<p style="color:#9A8A74">Aucun circuit pour le moment.</p>`; return; }
+    box.innerHTML = tours.map(t => `
+      <article class="card">
+        <div class="card-img" style="background-image:url('${escAttr(t.image)}');"></div>
+        <div class="card-body">
+          <div class="card-top"><span class="price">€ ${fmtPrice(t.price)}</span><span class="days">${escHtml(t.days)}</span></div>
+          <h3 class="card-title">${escHtml(t.title)}</h3>
+          <p class="card-loc">${escHtml(t.loc)}</p>
+          <p class="card-desc">${escHtml(t.desc || "")}</p>
+          <div class="tags">${(t.tags || []).map(x => `<span>${escHtml(x)}</span>`).join("")}</div>
+          <a class="btn btn-outline btn-block quote-link" data-tour="${t.id}" href="#contact">${T(currentLang, "tours.book")}</a>
+        </div>
+      </article>`).join("");
+  } catch (e) {
+    box.innerHTML = `<p style="color:#9A8A74">Impossible de charger les circuits.</p>`;
+  }
+}
+function escHtml(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function escAttr(s) { return escHtml(s).replace(/'/g, "&#39;"); }
+function fmtPrice(n) { return Number(n || 0).toLocaleString("fr-FR"); }
 
 /* ---------- Aperçu blog ---------- */
 async function loadBlogPreview() {
@@ -559,6 +589,31 @@ document.getElementById("mapBtns").addEventListener("click", e => {
   const q = encodeURIComponent(btn.dataset.q);
   document.getElementById("mapFrame").src = `https://maps.google.com/maps?q=${q}&t=&z=7&ie=UTF8&iwloc=&output=embed`;
 });
+
+async function loadSite() {
+  try {
+    const res = await fetch("/api/site");
+    if (!res.ok) throw new Error();
+    const s = await res.json();
+    const hero = document.getElementById("heroBg");
+    if (hero && s.hero) hero.style.backgroundImage = "url('" + String(s.hero).replace(/'/g, "") + "')";
+    const ab = document.getElementById("aboutImg");
+    if (ab && s.about) ab.src = s.about;
+    const tg = document.getElementById("teamGrid");
+    if (tg) {
+      tg.innerHTML = (s.team || []).map(m => `
+        <div class="member">
+          <div class="member-img" style="background-image:url('${escAttr(m.photo)}');"></div>
+          <h4>${escHtml(m.name)}</h4>
+          <p class="member-role">${escHtml(m.role)}</p>
+        </div>`).join("");
+    }
+    const gg = document.getElementById("galleryGrid");
+    if (gg && (s.gallery || []).length) {
+      gg.innerHTML = s.gallery.map(u => `<img src="${escAttr(u)}" alt="Sahara algérien">`).join("");
+    }
+  } catch (e) { /* silencieux */ }
+}
 
 /* ---------- Init ---------- */
 applyLang(currentLang);

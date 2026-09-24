@@ -43,7 +43,7 @@
 
 <!-- ============ HERO ============ -->
 <section class="hero" id="home">
-  <div class="hero-bg" style="background-image:url('img/hero-djanet.jpg');"></div>
+  <div class="hero-bg" id="heroBg" style="background-image:url('img/hero-djanet.jpg');"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
     <p class="hero-badge" data-i18n="hero.badge">Agence de voyage · Djanet &amp; Tamanrasset</p>
@@ -67,7 +67,7 @@
 <section class="section about" id="about">
   <div class="container about-grid">
     <div class="about-media">
-      <img src="img/dromadaire.jpg" alt="Dromadaire dans le Sahara algérien">
+      <img id="aboutImg" src="img/dromadaire.jpg" alt="Dromadaire dans le Sahara algérien">
       <div class="about-tag"><span data-i18n="about.tagline">Séjours privés &amp; petits groupes</span></div>
     </div>
     <div class="about-text">
@@ -96,89 +96,7 @@
     </div>
 
     <div class="cards" id="tourCards">
-      <article class="card">
-        <div class="card-img" style="background-image:url('img/tadrart.jpg');"></div>
-        <div class="card-body">
-          <div class="card-top"><span class="price">€ 340</span><span class="days" data-i18n="t1.days">3 jours / 2 nuits</span></div>
-          <h3 class="card-title" data-i18n="t1.title">Tadrart Rouge</h3>
-          <p class="card-loc" data-i18n="t1.loc">Djanet · Aurès rouge du Tassili</p>
-          <p class="card-desc" data-i18n="t1.desc">Arches, canyons et dunes ocre à l'aube. Le joyau des photographes, à moins d'une heure de Djanet.</p>
-          <div class="tags">
-            <span data-i18n="t1.t1">4x4</span><span data-i18n="t1.t2">Trek</span><span data-i18n="t1.t3">Bivouac</span>
-          </div>
-          <a class="btn btn-outline btn-block quote-link" data-tour="tadrart-rouge" data-i18n="tours.book" href="#contact">Demander un devis</a>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="card-img" style="background-image:url('img/sefar.jpg');"></div>
-        <div class="card-body">
-          <div class="card-top"><span class="price">€ 520</span><span class="days" data-i18n="t2.days">5 jours / 4 nuits</span></div>
-          <h3 class="card-title" data-i18n="t2.title">Sefar &amp; Essendilène</h3>
-          <p class="card-loc" data-i18n="t2.loc">Djanet · Art rupestre du Tassili</p>
-          <p class="card-desc" data-i18n="t2.desc">Le "Grand Dieu de Sefar" et la plus belle galerie d'art rupestre préhistorique au monde.</p>
-          <div class="tags">
-            <span data-i18n="t2.t1">Art rupestre</span><span data-i18n="t2.t2">Chameau</span><span data-i18n="t2.t3">Guide local</span>
-          </div>
-          <a class="btn btn-outline btn-block quote-link" data-tour="sefar-essendilene" data-i18n="tours.book" href="#contact">Demander un devis</a>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="card-img" style="background-image:url('img/iherir.jpg');"></div>
-        <div class="card-body">
-          <div class="card-top"><span class="price">€ 290</span><span class="days" data-i18n="t3.days">2 jours / 1 nuit</span></div>
-          <h3 class="card-title" data-i18n="t3.title">Iherir &amp; l'oasis cachée</h3>
-          <p class="card-loc" data-i18n="t3.loc">Djanet · Oasis et gueltas</p>
-          <p class="card-desc" data-i18n="t3.desc">Palmiers, mares naturelles et falaise de Tan Alouf. Le poumon vert du désert.</p>
-          <div class="tags">
-            <span data-i18n="t3.t1">Oasis</span><span data-i18n="t3.t2">Photo</span><span data-i18n="t3.t3">Pique-nique</span>
-          </div>
-          <a class="btn btn-outline btn-block quote-link" data-tour="iherir-oasis" data-i18n="tours.book" href="#contact">Demander un devis</a>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="card-img" style="background-image:url('img/hoggar.jpg');"></div>
-        <div class="card-body">
-          <div class="card-top"><span class="price">€ 640</span><span class="days" data-i18n="t4.days">6 jours / 5 nuits</span></div>
-          <h3 class="card-title" data-i18n="t4.title">Hoggar &amp; Assekrem</h3>
-          <p class="card-loc" data-i18n="t4.loc">Tamanrasset · Monts Atakor</p>
-          <p class="card-desc" data-i18n="t4.desc">Lever de soleil mythique à 2 700 m, chaos volcanique et légende de l'ermitage du Père de Foucauld.</p>
-          <div class="tags">
-            <span data-i18n="t4.t1">4x4</span><span data-i18n="t4.t2">Sommets</span><span data-i18n="t4.t3">Lever de soleil</span>
-          </div>
-          <a class="btn btn-outline btn-block quote-link" data-tour="hoggar-assekrem" data-i18n="tours.book" href="#contact">Demander un devis</a>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="card-img" style="background-image:url('img/sebiba.jpg');"></div>
-        <div class="card-body">
-          <div class="card-top"><span class="price">€ 480</span><span class="days" data-i18n="t5.days">4 jours / 3 nuits</span></div>
-          <h3 class="card-title" data-i18n="t5.title">Fête de la Sebiba</h3>
-          <p class="card-loc" data-i18n="t5.loc">Djanet · Chaque année</p>
-          <p class="card-desc" data-i18n="t5.desc">Danse millénaire, tambours et étoffe blanche : un moment unique au monde, au cœur de l'oasis.</p>
-          <div class="tags">
-            <span data-i18n="t5.t1">Culture</span><span data-i18n="t5.t2">Festival</span><span data-i18n="t5.t3">Dates 2026</span>
-          </div>
-          <a class="btn btn-outline btn-block quote-link" data-tour="sebiba" data-i18n="tours.book" href="#contact">Demander un devis</a>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="card-img" style="background-image:url('img/traversee.jpg');"></div>
-        <div class="card-body">
-          <div class="card-top"><span class="price">€ 1 150</span><span class="days" data-i18n="t6.days">9 jours / 8 nuits</span></div>
-          <h3 class="card-title" data-i18n="t6.title">Grande traversée Djanet–Tamanrasset</h3>
-          <p class="card-loc" data-i18n="t6.loc">Tassili &amp; Hoggar · Caravane</p>
-          <p class="card-desc" data-i18n="t6.desc">La grande aventure nomade : piste, dunes et montagnes entre les deux capitales du Sahara algérien.</p>
-          <div class="tags">
-            <span data-i18n="t6.t1">Caravane</span><span data-i18n="t6.t2">Expédition</span><span data-i18n="t6.t3">Aventure</span>
-          </div>
-          <a class="btn btn-outline btn-block quote-link" data-tour="grande-traversee" data-i18n="tours.book" href="#contact">Demander un devis</a>
-        </div>
-      </article>
+      <div class="card"><div class="card-body"><p style="color:#9A8A74">Chargement des circuits…</p></div></div>
     </div>
     <p class="tours-note" data-i18n="tours.note">* Tarifs par personne, transport de/vers l'aéroport inclus. Demandez votre devis personnalisé →</p>
   </div>
@@ -233,23 +151,7 @@
       <p class="eyebrow" data-i18n="team.eyebrow">Notre équipe</p>
       <h2 class="h2" data-i18n="team.title">Les visages de votre voyage</h2>
     </div>
-    <div class="grid3">
-      <div class="member">
-        <div class="member-img" style="background-image:url('https://images.unsplash.com/photo-1526406915894-7bcd65f60845?auto=format&fit=crop&w=500&q=70');"></div>
-        <h4 data-i18n="m1.n">Aida</h4>
-        <p class="member-role" data-i18n="m1.r">Fondatrice &amp; organisatrice</p>
-      </div>
-      <div class="member">
-        <div class="member-img" style="background-image:url('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=70');"></div>
-        <h4 data-i18n="m2.n">Achour</h4>
-        <p class="member-role" data-i18n="m2.r">Guide &amp; Amghar du Tassili</p>
-      </div>
-      <div class="member">
-        <div class="member-img" style="background-image:url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=70');"></div>
-        <h4 data-i18n="m3.n">Bébé</h4>
-        <p class="member-role" data-i18n="m3.r">Guide du Hoggar &amp; chauffeur 4x4</p>
-      </div>
-    </div>
+    <div class="grid3" id="teamGrid"></div>
   </div>
 </section>
 
@@ -288,16 +190,7 @@
       <h2 class="h2" data-i18n="gal.title">Le Sahara en images</h2>
     </div>
   </div>
-  <div class="gallery-grid">
-    <img src="img/hero-djanet.jpg" alt="Coucher de soleil sur Djanet">
-    <img src="img/tadrart.jpg" alt="Route de la Tadrart Rouge, Djanet">
-    <img src="img/sefar.jpg" alt="Le Grand Dieu de Sefar, Tassili n'Ajjer">
-    <img src="img/dunes-detail.jpg" alt="Dunes du Tassili n'Ajjer">
-    <img src="img/hoggar.jpg" alt="Lever de soleil sur l'Assekrem, Hoggar">
-    <img src="img/assekrem.jpg" alt="Sommets de l'Assekrem au coucher du soleil">
-    <img src="img/essendilene.jpg" alt="Paysages d'Essendilène, Djanet">
-    <img src="img/dromadaire.jpg" alt="Dromadaire dans le Sahara algérien">
-  </div>
+  <div class="gallery-grid" id="galleryGrid"></div>
 </section>
 
 <!-- ============ FAQ ============ -->
