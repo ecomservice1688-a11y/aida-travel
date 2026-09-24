@@ -6,7 +6,7 @@ const I18N = {
     "title": "Aida Travel · Djanet & Tamanrasset · Sahara Algérien",
     "nav.home": "Accueil", "nav.tours": "Circuits", "nav.about": "L'agence",
     "nav.why": "Pourquoi nous", "nav.team": "Équipe", "nav.faq": "FAQ",
-    "nav.client": "Espace client", "nav.contact": "Contact", "nav.blog": "Carnets",
+    "nav.client": "Réserver", "nav.contact": "Contact", "nav.blog": "Carnets",
 
     "hero.badge": "Agence de voyage · Djanet & Tamanrasset",
     "hero.title": "Au cœur du Sahara algérien",
@@ -125,7 +125,7 @@ const I18N = {
     "title": "Aida Travel · Djanet & Tamanrasset · Algerian Sahara",
     "nav.home": "Home", "nav.tours": "Tours", "nav.about": "The agency",
     "nav.why": "Why us", "nav.team": "Team", "nav.faq": "FAQ",
-    "nav.client": "Client area", "nav.contact": "Contact", "nav.blog": "Travel journal",
+    "nav.client": "Book a trip", "nav.contact": "Contact", "nav.blog": "Travel journal",
 
     "hero.badge": "Travel agency · Djanet & Tamanrasset",
     "hero.title": "In the heart of the Algerian Sahara",
@@ -244,7 +244,7 @@ const I18N = {
     "title": "Aida Travel · Djanet y Tamanrasset · Sáhara argelino",
     "nav.home": "Inicio", "nav.tours": "Circuitos", "nav.about": "La agencia",
     "nav.why": "Por qué nosotros", "nav.team": "Equipo", "nav.faq": "Preguntas",
-    "nav.client": "Área de cliente", "nav.contact": "Contacto", "nav.blog": "Cuadernos de viaje",
+    "nav.client": "Reservar", "nav.contact": "Contacto", "nav.blog": "Cuadernos de viaje",
 
     "hero.badge": "Agencia de viajes · Djanet y Tamanrasset",
     "hero.title": "En el corazón del Sáhara argelino",
@@ -458,10 +458,8 @@ form.addEventListener("submit", async e => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Erreur");
-    form.reset();
-    okBox.classList.remove("show");
-    okBox.classList.add("show");
-    setTimeout(() => okBox.classList.remove("show"), 6000);
+    const qs = new URLSearchParams({ name: document.getElementById("fName").value, email: document.getElementById("fEmail").value });
+    location.href = "merci.html?" + qs.toString();
   } catch (err) {
     okBox.textContent = "⚠ " + err.message;
     okBox.style.color = "#D64545";

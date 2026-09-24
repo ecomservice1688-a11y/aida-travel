@@ -257,21 +257,28 @@ api["GET /api/tours"] = (req, res) => {
   send(res, 200, loadDB().tours);
 };
 
-/* --- Réservations client --- */
+/* --- Réservations client (sans compte) --- */
 api["POST /api/bookings"] = async (req, res, body) => {
-  const { token: t, tourId, date, travellers, message } = body;
-  const sess = sessions[t];
-  if (!sess || sess.type !== "client") return send(res, 401, { error: "Non connecté" });
+  const { token: t, tourId, date, travellers, message, name, email, phone } = body;
   const db = loadDB();
   const tour = db.tours.find(x => x.id === tourId);
   if (!tour) return send(res, 400, { error: "Circuit inconnu" });
   const nb = parseInt(travellers, 10) || 1;
-  const client = db.clients.find(c => c.id === sess.id);
+  let cName = String(name || "").trim();
+  let cEmail = String(email || "").trim();
+  let cPhone = String(phone || "").trim();
+  const sess = sessions[t];
+  if (sess && sess.type === "client") {
+    const client = db.clients.find(c => c.id === sess.id);
+    if (client) { cName = client.name; cEmail = client.email; cPhone = client.phone || ""; }
+  }
+  if (!cName || !cEmail) return send(res, 400, { error: "Nom et email requis" });
   const booking = {
     id: uid(),
-    clientId: client.id,
-    clientName: client.name,
-    clientEmail: client.email,
+    clientId: sess && sess.type === "client" ? (sess.id || "") : "",
+    clientName: cName,
+    clientEmail: cEmail,
+    clientPhone: cPhone,
     tourId: tour.id,
     tourTitle: tour.title,
     tourLoc: tour.loc,

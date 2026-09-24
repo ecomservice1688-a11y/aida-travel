@@ -115,6 +115,15 @@ select.status{border:1.5px solid var(--sand-3);padding:6px 10px;border-radius:8p
 
 .empty{text-align:center;color:#9A8A74;padding:26px;font-size:14px}
 
+/* ---- Page merci ---- */
+.thanks-wrap{display:flex;justify-content:center}
+.thanks-card{max-width:560px;text-align:center;padding:48px 40px;margin-top:26px}
+.thanks-card .thanks-logo{width:64px;height:64px;margin:0 auto 16px}
+.thanks-card .h2{font-size:30px}
+.thanks-card .muted{font-size:14.5px;line-height:1.8}
+.thanks-actions{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+.thanks-actions .btn{min-width:220px}
+
 @media(max-width:700px){
   .stats{grid-template-columns:repeat(2,1fr)}
   .row2{grid-template-columns:1fr}

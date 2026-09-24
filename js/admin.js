@@ -85,7 +85,7 @@ async function loadBookings() {
     $("bkEmpty").classList.add("hidden");
     tb.innerHTML = list.map(b => `
       <tr>
-        <td><b>${b.clientName}</b><br><small>${b.clientEmail}</small></td>
+        <td><b>${b.clientName}</b><br><small>${b.clientEmail}${b.clientPhone ? " · " + b.clientPhone : ""}</small></td>
         <td><b>${b.tourTitle}</b><br><small>${b.tourLoc} · n° ${b.id}</small></td>
         <td>${b.tripDate || "—"}</td>
         <td>${b.travellers}</td>
