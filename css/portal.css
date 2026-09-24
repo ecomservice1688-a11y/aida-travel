@@ -130,3 +130,12 @@ select.status{border:1.5px solid var(--sand-3);padding:6px 10px;border-radius:8p
   .pbar-in{flex-wrap:wrap;justify-content:center;text-align:center}
   .msg-item{flex-direction:column}
 }
+
+/* ---- Visites ---- */
+.country-list{list-style:none;margin-top:6px}
+.country-list li{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--sand-2)}
+.country-list li:last-child{border-bottom:none}
+.country-list .cname{width:150px;font-weight:600;color:var(--night);font-size:13.5px}
+.cbar{flex:1;height:10px;background:var(--sand);border-radius:999px;overflow:hidden}
+.cbar i{display:block;height:100%;background:linear-gradient(90deg,var(--orange),var(--orange-deep));border-radius:999px}
+.country-list .ccount{width:44px;text-align:right;font-weight:700;color:var(--orange-deep)}

@@ -108,6 +108,7 @@ function ensureSchema(db) {
   if (!Array.isArray(db.departures)) db.departures = seedDepartures();
   if (!Array.isArray(db.posts)) db.posts = seedPosts();
   if (!db.site) db.site = seedSite();
+  if (!Array.isArray(db.visits)) db.visits = [];
   migrateTours(db);
   return db;
 }
@@ -326,6 +327,65 @@ api["POST /api/contact"] = async (req, res, body) => {
   send(res, 201, { ok: true });
 };
 
+/* --- Suivi de visites (pays détecté par IP) --- */
+const geoCache = new Map(); // ip -> { country, ts }
+function clientIp(req) {
+  const fwd = (req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  return fwd || req.socket.remoteAddress || "";
+}
+async function geoCountry(ip) {
+  if (!ip) return "";
+  const cached = geoCache.get(ip);
+  if (cached && Date.now() - cached.ts < 86400000) return cached.country;
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 4000);
+    const r = await fetch("https://ipwho.is/" + encodeURIComponent(ip), { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error();
+    const j = await r.json();
+    const country = j && j.success !== false && j.country ? String(j.country) : "";
+    geoCache.set(ip, { country, ts: Date.now() });
+    return country;
+  } catch (e) {
+    geoCache.set(ip, { country: "", ts: Date.now() });
+    return "";
+  }
+}
+api["POST /api/visit"] = async (req, res, body) => {
+  const ip = clientIp(req);
+  const db = loadDB();
+  const now = Date.now();
+  const page = String(body.page || "/").slice(0, 120);
+  const ref = String(body.ref || "").slice(0, 300);
+  const recent = db.visits.filter(v => v.ip === ip && v.page === page && now - v.at < 300000);
+  if (recent.length >= 3) return send(res, 200, { ok: true, tracked: false });
+  const country = await geoCountry(ip);
+  db.visits.push({ id: uid(), ip, country, page, ref, at: now });
+  if (db.visits.length > 5000) db.visits = db.visits.slice(-5000);
+  saveDB(db);
+  send(res, 201, { ok: true, tracked: true });
+};
+
+api["GET /api/admin/visits"] = (req, res) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const db = loadDB();
+  const visits = db.visits.slice().reverse();
+  const today0 = new Date(); today0.setHours(0, 0, 0, 0);
+  const today = visits.filter(v => v.at >= today0.getTime());
+  const uniq = new Set(visits.map(v => v.ip));
+  const countries = {};
+  visits.forEach(v => {
+    const c = v.country || "Inconnu";
+    countries[c] = (countries[c] || 0) + 1;
+  });
+  const top = Object.entries(countries)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+  send(res, 200, { total: visits.length, today: today.length, unique: uniq.size, top, recent: visits.slice(0, 25) });
+};
+
 /* --- Admin --- */
 api["POST /api/admin/login"] = async (req, res, body) => {
   if (body.username === ADMIN.username && body.password === ADMIN.password) {
@@ -353,7 +413,8 @@ api["GET /api/admin/stats"] = (req, res) => {
     clients: db.clients.length,
     messages: db.messages.length,
     revenue,
-    pending: db.bookings.filter(b => b.status === "pending").length
+    pending: db.bookings.filter(b => b.status === "pending").length,
+    visits: db.visits.length
   });
 };
 

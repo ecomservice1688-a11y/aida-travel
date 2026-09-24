@@ -52,7 +52,7 @@ function enterDash() {
   $("barUser").textContent = "admin";
   $("logoutBtn").classList.remove("hidden");
   loadStats(); loadBookings(); loadClients(); loadMessages();
-  loadToursAdmin(); loadDepartures(); loadPosts(); loadSiteData();
+  loadToursAdmin(); loadDepartures(); loadPosts(); loadSiteData(); loadVisits();
 }
 
 /* ---------- Stats ---------- */
@@ -63,7 +63,8 @@ async function loadStats() {
       <div class="stat-card"><div class="n">${s.bookings}</div><div class="l">Réservations</div></div>
       <div class="stat-card"><div class="n">${s.clients}</div><div class="l">Clients</div></div>
       <div class="stat-card dark"><div class="n">${s.revenue.toLocaleString("fr-FR")} €</div><div class="l">Chiffre d'affaires (confirmées + payées)</div></div>
-      <div class="stat-card"><div class="n">${s.pending}</div><div class="l">En attente</div></div>`;
+      <div class="stat-card"><div class="n">${s.pending}</div><div class="l">En attente</div></div>
+      <div class="stat-card"><div class="n">${(s.visits || 0).toLocaleString("fr-FR")}</div><div class="l">Visites</div></div>`;
   } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
 }
 
@@ -72,7 +73,7 @@ document.querySelectorAll(".tab[data-tab]").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".tab[data-tab]").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
-    ["bookings", "clients", "messages", "tours", "departures", "posts", "site"].forEach(t => $("tab-" + t).classList.toggle("hidden", t !== tab.dataset.tab));
+    ["bookings", "clients", "messages", "tours", "departures", "posts", "site", "visits"].forEach(t => $("tab-" + t).classList.toggle("hidden", t !== tab.dataset.tab));
   });
 });
 
@@ -397,6 +398,42 @@ $("siteForm").addEventListener("submit", async e => {
     setTimeout(() => { ok.textContent = ""; }, 4000);
   } catch (err) { alert("Erreur : " + err.message); }
 });
+
+/* ---------- Visites (admin) ---------- */
+async function loadVisits() {
+  try {
+    const v = await api("/api/admin/visits");
+    const cards = $("visitStats").children;
+    cards[0].querySelector(".n").textContent = v.total.toLocaleString("fr-FR");
+    cards[1].querySelector(".n").textContent = v.today.toLocaleString("fr-FR");
+    cards[2].querySelector(".n").textContent = v.unique.toLocaleString("fr-FR");
+    const top = $("visitTop");
+    const max = v.top.length ? v.top[0].count : 1;
+    top.innerHTML = v.top.length
+      ? v.top.map(c => `
+          <li>
+            <span class="cname">${esc(c.name)}</span>
+            <div class="cbar"><i style="width:${Math.round(c.count / max * 100)}%"></i></div>
+            <span class="ccount">${c.count}</span>
+          </li>`).join("")
+      : `<li class="muted">Pas encore de données.</li>`;
+    const tb = $("visitTable");
+    $("visitEmpty").classList.toggle("hidden", v.recent.length > 0);
+    tb.innerHTML = v.recent.map(r => `
+      <tr>
+        <td><b>${esc(r.page)}</b><small>${r.ref ? "<br>" + esc(String(r.ref).slice(0, 40)) : ""}</small></td>
+        <td>${esc(r.country || "—")}</td>
+        <td class="muted">${maskIp(r.ip)}</td>
+        <td class="muted">${fmtDate(new Date(r.at).toISOString())} · ${new Date(r.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</td>
+      </tr>`).join("");
+  } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
+}
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function maskIp(ip) {
+  if (!ip) return "—";
+  const parts = String(ip).split(".");
+  return parts.length === 4 ? parts[0] + "." + parts[1] + ".*.*" : "·".repeat(String(ip).length);
+}
 
 /* ---------- Session invalide ---------- */
 function handleAuth() {
