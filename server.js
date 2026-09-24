@@ -758,6 +758,10 @@ async function serveApi(req, res) {
 function serveStatic(req, res) {
   let pathname = decodeURIComponent(new URL(req.url, "http://x").pathname);
   if (pathname === "/") pathname = "/index.html";
+  if (pathname === "/client.html") {
+    res.writeHead(302, { "Location": "/#contact" });
+    return res.end();
+  }
   const file = path.resolve(ROOT, "." + pathname);
   if (file !== ROOT && !file.startsWith(ROOT + path.sep)) {
     return send(res, 403, { error: "Accès interdit" });
@@ -781,7 +785,6 @@ server.listen(PORT, () => {
   console.log("==============================================");
   console.log("  AIDA TRAVEL  ·  serveur démarré");
   console.log("  Site vitrine : http://localhost:" + PORT);
-  console.log("  Espace client : http://localhost:" + PORT + "/client.html");
   console.log("  Espace admin  : http://localhost:" + PORT + "/admin.html");
   console.log("  Admin : " + ADMIN.username + " / " + ADMIN.password);
   console.log("==============================================");
