@@ -221,6 +221,9 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);line-height:1.2}
   font-family:var(--font-body);font-size:14.5px;color:var(--ink);background:var(--cream);transition:.2s;
 }
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--orange-deep);background:#fff}
+.phone-row{display:flex;gap:8px;align-items:stretch}
+.phone-row select{flex:0 0 auto;width:112px;padding:13px 6px}
+.phone-row input{flex:1;min-width:0}
 .form-ok{display:none;color:#1f9d5a;font-size:14px;margin-top:14px;text-align:center;font-weight:600}
 .form-ok.show{display:block}
 
