@@ -32,12 +32,11 @@
       <h1 class="h2 center">Espace administrateur</h1>
       <p class="muted center" style="margin-bottom:20px">Gérez les réservations, les clients et les messages du site.</p>
       <form id="adminLogin">
-        <div class="field"><label>Utilisateur *</label><input type="text" id="adUser" required></div>
-        <div class="field"><label>Mot de passe *</label><input type="password" id="adPass" required></div>
+        <div class="field"><label>Utilisateur *</label><input type="text" id="adUser" required autocomplete="username"></div>
+        <div class="field"><label>Mot de passe *</label><input type="password" id="adPass" required autocomplete="current-password"></div>
         <button type="submit" class="btn block">Se connecter</button>
         <p class="msg err hidden" id="adMsg"></p>
       </form>
-      <p class="muted center" style="margin-top:14px;font-size:12px">Test : <b>aida</b> / <b>aida</b></p>
     </div>
   </div>
 

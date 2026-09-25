@@ -11,7 +11,9 @@ services:
         value: "20"
       - key: ADMIN_USER
         value: aida
+        sync: false
       - key: ADMIN_PASS
         value: aida
+        sync: false
       - key: MONGODB_URI
         sync: false
