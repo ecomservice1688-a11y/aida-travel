@@ -513,6 +513,7 @@ function startPolling() {
     try {
       await loadMessages();
       await loadBookings();
+      await loadVisits();
     } catch (e) { if (e && e.message === "Accès refusé") handleAuth(); }
   }, 8000);
 }
