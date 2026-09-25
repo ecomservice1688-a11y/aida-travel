@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 const ADMIN = {
   username: process.env.ADMIN_USER || "aida",
-  password: process.env.ADMIN_PASS || "aida"
+  password: process.env.ADMIN_PASS || "Aida@Djanet2026"
 };
 
 const SEED_TOURS = [
