@@ -16,8 +16,8 @@ const DB_FILE = path.join(DATA_DIR, "db.json");
 const PORT = process.env.PORT || 3000;
 
 const ADMIN = {
-  username: process.env.ADMIN_USER || "admin",
-  password: process.env.ADMIN_PASS || "admin123"
+  username: process.env.ADMIN_USER || "aida",
+  password: process.env.ADMIN_PASS || "aida"
 };
 
 const SEED_TOURS = [
