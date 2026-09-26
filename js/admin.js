@@ -18,10 +18,18 @@ const PERM_LABELS = { bookings: "Réservations", clients: "Clients", messages: "
 function can(key) { return !!(me && (me.role === "admin" || (me.perms && me.perms[key]))); }
 
 async function api(path, opts = {}) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 28000);
   const res = await fetch(path, {
     headers: { "Content-Type": "application/json", "X-Admin-Token": aToken },
+    signal: ctrl.signal,
     ...opts
+  }).catch(err => {
+    clearTimeout(t);
+    if (err.name === "AbortError") throw new Error("Le serveur met du temps à répondre (réveil ?). Réessayez dans quelques secondes.");
+    throw err;
   });
+  clearTimeout(t);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || "Erreur serveur");
   return data;
@@ -48,9 +56,21 @@ function ctaBtns(email, phone) {
 }
 
 /* ---------- Auth ---------- */
+window.addEventListener("error", e => {
+  const b = $("errBanner");
+  if (b) { b.textContent = "Erreur : " + (e.message || e.error || "inconnue"); b.classList.remove("hidden"); }
+});
+window.addEventListener("unhandledrejection", e => {
+  const b = $("errBanner");
+  if (b) { b.textContent = "Erreur : " + (e.reason && e.reason.message || e.reason || "inconnue"); b.classList.remove("hidden"); }
+});
 $("adminLogin").addEventListener("submit", async e => {
   e.preventDefault();
-  const msg = $("adMsg"); msg.classList.add("hidden");
+  const btn = $("adminLogin").querySelector("button[type=submit]");
+  const msg = $("adMsg");
+  msg.classList.add("hidden");
+  const prev = btn.textContent;
+  btn.textContent = "Connexion…"; btn.disabled = true;
   try {
     const data = await api("/api/admin/login", {
       method: "POST",
@@ -60,7 +80,8 @@ $("adminLogin").addEventListener("submit", async e => {
     me = data.me || null;
     localStorage.setItem(ATOKEN_KEY, aToken);
     enterDash();
-  } catch (err) { msg.textContent = err.message; msg.classList.remove("hidden"); }
+  } catch (err) { msg.textContent = "Échec : " + err.message; msg.classList.remove("hidden"); }
+  finally { btn.textContent = prev; btn.disabled = false; }
 });
 
 $("logoutBtn").addEventListener("click", () => {

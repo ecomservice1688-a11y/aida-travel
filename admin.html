@@ -34,10 +34,11 @@
       <h1 class="h2 center">Espace administrateur</h1>
       <p class="muted center" style="margin-bottom:20px">Gérez les réservations, les clients et les messages du site.</p>
       <form id="adminLogin">
-        <div class="field"><label>E-mail *</label><input type="email" id="adUser" required autocomplete="username"></div>
+        <div class="field"><label>E-mail ou nom d'utilisateur *</label><input type="text" id="adUser" required autocomplete="username" placeholder="aida@aida-travel.com ou aida"></div>
         <div class="field"><label>Mot de passe *</label><input type="password" id="adPass" required autocomplete="current-password"></div>
         <button type="submit" class="btn block">Se connecter</button>
         <p class="msg err hidden" id="adMsg"></p>
+      <div id="errBanner" class="hidden" style="margin:10px 0;padding:10px 12px;background:#FBE9E7;color:#C62828;border:1px solid #EF9A9A;border-radius:10px;font-size:13px;white-space:pre-wrap"></div>
         <a href="#" id="forgotLink" class="muted" style="display:block;margin-top:12px;text-align:center">Mot de passe oublié ?</a>
         <div id="forgotBox" class="hidden" style="margin-top:14px;padding:14px;background:#FDF9F2;border:1px dashed var(--sand-3);border-radius:12px">
           <p class="muted" style="margin-bottom:10px">Saisissez votre e-mail : vous recevrez un lien de réinitialisation valable 15 minutes.</p>
