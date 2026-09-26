@@ -503,11 +503,13 @@ function sessionView(s) {
 }
 
 api["POST /api/admin/login"] = async (req, res, body) => {
+  const ident = String(body.email || body.username || "");
   const u = findUser(body.email || body.username);
-  if (!u) return send(res, 401, { error: "Identifiants incorrects" });
-  if (hashPass(body.password, u.salt) !== u.passHash) return send(res, 401, { error: "Identifiants incorrects" });
+  if (!u) { console.log("[CNX] echec inconnu id=" + ident); return send(res, 401, { error: "Identifiants incorrects" }); }
+  if (hashPass(body.password, u.salt) !== u.passHash) { console.log("[CNX] echec mot de passe id=" + ident); return send(res, 401, { error: "Identifiants incorrects" }); }
   const t = token();
   sessions[t] = { type: "admin", userId: u.id, name: u.name, email: u.email.toLowerCase(), role: u.role, perms: u.perms };
+  console.log("[CNX] OK id=" + ident + " role=" + u.role);
   send(res, 200, { token: t, me: sessionView(sessions[t]) });
 };
 
