@@ -86,10 +86,10 @@ async function initStore() {
   const client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 6000 });
   await client.connect();
   const col = client.db("aida-travel").collection("state");
+  MONGO = { col };
   const doc = await col.findOne({ _id: "db" });
   MEM_DB = ensureSchema(doc && doc.data ? doc.data : { tours: SEED_TOURS, clients: [], bookings: [], messages: [] });
   if (!doc) await saveDB(MEM_DB);
-  MONGO = { col };
   console.log("  MongoDB actif : quelques données, " + MEM_DB.tours.length + " circuits, " + MEM_DB.bookings.length + " réservations");
 }
 
@@ -450,6 +450,19 @@ api["GET /api/admin/visits"] = (req, res) => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
   send(res, 200, { total: visits.length, today: today.length, unique: uniq.size, top, recent: visits.slice(0, 25) });
+};
+
+api["GET /api/admin/backup"] = (req, res) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const db = loadDB();
+  const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
+  const payload = JSON.stringify({ exportedAt: new Date().toISOString(), app: "Aida Travel", data: db }, null, 2);
+  res.writeHead(200, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Content-Disposition": 'attachment; filename="aida-backup-' + stamp + '.json"',
+    "Content-Length": Buffer.byteLength(payload)
+  });
+  res.end(payload);
 };
 
 /* --- Admin --- */
