@@ -122,7 +122,6 @@ async function loadStats() {
     $("statsRow").innerHTML = `
       <div class="stat-card"><div class="n">${s.bookings}</div><div class="l">Réservations</div></div>
       <div class="stat-card"><div class="n">${s.clients}</div><div class="l">Clients</div></div>
-      <div class="stat-card dark"><div class="n">${s.revenue.toLocaleString("fr-FR")} €</div><div class="l">Chiffre d'affaires (confirmées + payées)</div></div>
       <div class="stat-card"><div class="n">${s.pending}</div><div class="l">En attente</div></div>
       <div class="stat-card"><div class="n">${(s.visits || 0).toLocaleString("fr-FR")}</div><div class="l">Visites</div></div>`;
   } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
