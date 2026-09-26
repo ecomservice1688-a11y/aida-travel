@@ -34,10 +34,32 @@
       <h1 class="h2 center">Espace administrateur</h1>
       <p class="muted center" style="margin-bottom:20px">Gérez les réservations, les clients et les messages du site.</p>
       <form id="adminLogin">
-        <div class="field"><label>Utilisateur *</label><input type="text" id="adUser" required autocomplete="username"></div>
+        <div class="field"><label>E-mail *</label><input type="email" id="adUser" required autocomplete="username"></div>
         <div class="field"><label>Mot de passe *</label><input type="password" id="adPass" required autocomplete="current-password"></div>
         <button type="submit" class="btn block">Se connecter</button>
         <p class="msg err hidden" id="adMsg"></p>
+        <a href="#" id="forgotLink" class="muted" style="display:block;margin-top:12px;text-align:center">Mot de passe oublié ?</a>
+        <div id="forgotBox" class="hidden" style="margin-top:14px;padding:14px;background:#FDF9F2;border:1px dashed var(--sand-3);border-radius:12px">
+          <p class="muted" style="margin-bottom:10px">Saisissez votre e-mail : vous recevrez un lien de réinitialisation valable 15 minutes.</p>
+          <div class="field"><label>E-mail *</label><input type="email" id="forgotEmail" required></div>
+          <button type="button" class="btn" id="forgotGo">Envoyer le lien</button>
+          <p class="muted" id="forgotMsg" style="margin-top:8px"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======= RÉINITIALISATION (lien reçu par e-mail) ======= -->
+  <div id="resetView" class="hidden">
+    <div class="card auth-card">
+      <p class="eyebrow center">AidA Travel</p>
+      <h1 class="h2 center">Nouveau mot de passe</h1>
+      <p class="muted center" style="margin-bottom:20px">Choisissez un nouveau mot de passe (8 caractères minimum).</p>
+      <form id="adminReset">
+        <div class="field"><label>Nouveau mot de passe *</label><input type="password" id="rsPass" required minlength="8" autocomplete="new-password"></div>
+        <div class="field"><label>Confirmer le mot de passe *</label><input type="password" id="rsPass2" required autocomplete="new-password"></div>
+        <button type="submit" class="btn block">Valider</button>
+        <p class="msg err hidden" id="rsMsg"></p>
       </form>
     </div>
   </div>
@@ -56,6 +78,7 @@
         <button class="tab" data-tab="departures" type="button">Départs</button>
         <button class="tab" data-tab="posts" type="button">Articles</button>
         <button class="tab" data-tab="site" type="button">Site</button>
+        <button class="tab" data-tab="users" type="button">Équipes</button>
         <button class="tab" data-tab="visits" type="button">Visites</button>
       </div>
 
@@ -232,6 +255,41 @@
           <button type="submit" class="btn">Enregistrer le site</button>
           <span class="muted" id="siteSaved" style="margin-left:12px"></span>
         </form>
+      </div>
+
+      <!-- Équipes -->
+      <div id="tab-users" class="hidden">
+        <p class="muted" style="margin-bottom:16px">Créez des comptes pour votre équipe et choisissez, pour chaque membre, les pages qu'il peut consulter.</p>
+        <form id="userForm" style="margin-bottom:22px">
+          <div class="row2">
+            <div class="field"><label>Nom *</label><input type="text" id="uName" required></div>
+            <div class="field"><label>E-mail *</label><input type="email" id="uEmail" required></div>
+            <div class="field"><label>Mot de passe * (8 caractères min)</label><input type="password" id="uPass" required minlength="8" autocomplete="new-password"></div>
+            <div class="field">
+              <label>Rôle</label>
+              <select id="uRole">
+                <option value="membre">Membre</option>
+                <option value="admin">Administrateur</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Pages accessibles (par défaut : aucune)</label>
+            <div class="perm-grid" id="permGrid"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button type="submit" class="btn" id="userSubmit">Ajouter</button>
+            <button type="button" class="btn ghost hidden" id="userCancel">Annuler</button>
+          </div>
+          <p class="msg err hidden" id="userMsg"></p>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nom</th><th>E-mail</th><th>Rôle</th><th>Accès</th><th></th></tr></thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+        <p class="empty hidden" id="usersEmpty">Aucun compte pour le moment.</p>
       </div>
 
       <!-- Visites -->

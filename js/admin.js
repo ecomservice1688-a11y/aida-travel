@@ -10,6 +10,12 @@ const STATUS_LABELS = {
 };
 
 let aToken = localStorage.getItem(ATOKEN_KEY) || "";
+let me = null;                                  // profil de la session (nom, email, rôle, droits)
+let resetToken = new URLSearchParams(location.search).get("reset");
+
+const TAB_PERM = { bookings: "bookings", clients: "clients", messages: "messages", tours: "tours", departures: "departures", posts: "posts", site: "site", visits: "visits", users: "users" };
+const PERM_LABELS = { bookings: "Réservations", clients: "Clients", messages: "Messages", tours: "Circuits", departures: "Départs", posts: "Articles", site: "Site", visits: "Visites", backup: "Sauvegarde" };
+function can(key) { return !!(me && (me.role === "admin" || (me.perms && me.perms[key]))); }
 
 async function api(path, opts = {}) {
   const res = await fetch(path, {
@@ -48,16 +54,17 @@ $("adminLogin").addEventListener("submit", async e => {
   try {
     const data = await api("/api/admin/login", {
       method: "POST",
-      body: JSON.stringify({ username: $("adUser").value, password: $("adPass").value })
+      body: JSON.stringify({ email: $("adUser").value, password: $("adPass").value })
     });
     aToken = data.token;
+    me = data.me || null;
     localStorage.setItem(ATOKEN_KEY, aToken);
     enterDash();
   } catch (err) { msg.textContent = err.message; msg.classList.remove("hidden"); }
 });
 
 $("logoutBtn").addEventListener("click", () => {
-  aToken = ""; localStorage.removeItem(ATOKEN_KEY);
+  aToken = ""; me = null; localStorage.removeItem(ATOKEN_KEY);
   stopPolling();
   $("dashView").classList.add("hidden"); $("loginView").classList.remove("hidden");
 });
@@ -81,12 +88,24 @@ $("backupBtn").addEventListener("click", async () => {
 function enterDash() {
   $("loginView").classList.add("hidden");
   $("dashView").classList.remove("hidden");
-  $("barUser").textContent = "admin";
+  $("barUser").textContent = me.name + (me.role === "admin" ? " · (admin)" : "");
   $("logoutBtn").classList.remove("hidden");
-  $("backupBtn").classList.remove("hidden");
-  loadStats(); loadBookings(); loadClients(); loadMessages();
-  loadToursAdmin(); loadDepartures(); loadPosts(); loadSiteData(); loadVisits();
-  populateManualTours();
+  $("backupBtn").classList.toggle("hidden", !can("backup"));
+  document.querySelectorAll(".tab[data-tab]").forEach(tab => {
+    const k = TAB_PERM[tab.dataset.tab];
+    tab.classList.toggle("hidden", !can(k));
+    if (!can(k)) $("tab-" + tab.dataset.tab).classList.add("hidden");
+  });
+  loadStats();
+  if (can("bookings")) { loadBookings(); populateManualTours(); }
+  if (can("clients")) loadClients();
+  if (can("messages")) loadMessages();
+  if (can("tours")) loadToursAdmin();
+  if (can("departures")) loadDepartures();
+  if (can("posts")) loadPosts();
+  if (can("site")) loadSiteData();
+  if (can("visits")) loadVisits();
+  if (can("users")) loadUsers();
   startPolling();
 }
 
@@ -108,7 +127,7 @@ document.querySelectorAll(".tab[data-tab]").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".tab[data-tab]").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
-    ["bookings", "clients", "messages", "tours", "departures", "posts", "site", "visits"].forEach(t => $("tab-" + t).classList.toggle("hidden", t !== tab.dataset.tab));
+    ["bookings", "clients", "messages", "tours", "departures", "posts", "site", "users", "visits"].forEach(t => $("tab-" + t).classList.toggle("hidden", t !== tab.dataset.tab));
   });
 });
 
@@ -522,30 +541,135 @@ function maskIp(ip) {
   return parts.length === 4 ? parts[0] + "." + parts[1] + ".*.*" : "·".repeat(String(ip).length);
 }
 
+/* ---------- Mot de passe oublié ---------- */
+$("forgotLink").addEventListener("click", e => { e.preventDefault(); $("forgotBox").classList.toggle("hidden"); });
+$("forgotGo").addEventListener("click", async () => {
+  const em = $("forgotEmail").value.trim();
+  if (!em) return;
+  const btn = $("forgotGo"); btn.disabled = true;
+  try {
+    const r = await api("/api/admin/forgot", { method: "POST", body: JSON.stringify({ email: em }) });
+    $("forgotMsg").textContent = r.via === "console"
+      ? "Lien de réinitialisation généré : regarde la console du serveur."
+      : "Si cet e-mail existe, un lien vient d'être envoyé (valable 15 minutes).";
+  } catch (e) { $("forgotMsg").textContent = "Erreur : " + e.message; }
+  btn.disabled = false;
+});
+
+/* ---------- Réinitialisation (lien reçu) ---------- */
+$("adminReset").addEventListener("submit", async e => {
+  e.preventDefault();
+  const m = $("rsMsg"); m.classList.add("hidden");
+  if ($("rsPass").value !== $("rsPass2").value) {
+    m.textContent = "Les deux mots de passe ne correspondent pas."; m.classList.remove("hidden"); return;
+  }
+  try {
+    await api("/api/admin/reset", { method: "POST", body: JSON.stringify({ token: resetToken, password: $("rsPass").value }) });
+    $("resetView").classList.add("hidden"); $("loginView").classList.remove("hidden");
+    const ok = $("adMsg");
+    ok.classList.remove("err"); ok.classList.add("ok");
+    ok.textContent = "Mot de passe changé. Connectez-vous avec le nouveau mot de passe.";
+    ok.classList.remove("hidden");
+    $("rsPass").value = ""; $("rsPass2").value = ""; resetToken = null;
+  } catch (err) { m.textContent = err.message; m.classList.remove("hidden"); }
+});
+
+/* ---------- Équipe (comptes) ---------- */
+let userEditId = null;
+function renderPermGrid(perms) {
+  $("permGrid").innerHTML = Object.entries(PERM_LABELS)
+    .map(([k, lab]) => `<label><input type="checkbox" class="uperm" value="${k}" ${perms && perms[k] ? "checked" : ""}> ${lab}</label>`)
+    .join("");
+}
+async function loadUsers() {
+  try {
+    const list = await api("/api/admin/users");
+    const tb = $("usersTable");
+    $("usersEmpty").classList.toggle("hidden", list.length > 0);
+    tb.innerHTML = list.map(u => {
+      const acc = Object.entries(PERM_LABELS).filter(([k]) => u.perms && u.perms[k]).map(([, lab]) => lab).join(", ") || "—";
+      return `<tr>
+        <td><b>${esc(u.name)}</b></td>
+        <td>${esc(u.email)}</td>
+        <td>${u.role === "admin" ? `<span class="badge paid">Admin</span>` : `<span class="badge pending">Membre</span>`}</td>
+        <td><small>${acc}</small></td>
+        <td style="white-space:nowrap">
+          <button class="btn small ghost" data-edit-user="${u.id}">Modifier</button>
+          <button class="btn small danger" data-del-user="${u.id}">Supprimer</button>
+        </td></tr>`;
+    }).join("");
+    tb.querySelectorAll("[data-edit-user]").forEach(b => b.addEventListener("click", () => fillUserForm(b.dataset.editUser)));
+    tb.querySelectorAll("[data-del-user]").forEach(b => b.addEventListener("click", () => delUser(b.dataset.delUser)));
+  } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
+}
+async function fillUserForm(id) {
+  const list = await api("/api/admin/users");
+  const u = list.find(x => x.id === id);
+  if (!u) return;
+  userEditId = id;
+  $("uName").value = u.name; $("uEmail").value = u.email; $("uRole").value = u.role;
+  $("uPass").value = ""; $("uPass").placeholder = "Laisser vide pour ne pas changer";
+  renderPermGrid(u.perms);
+  $("userSubmit").textContent = "Enregistrer"; $("userCancel").classList.remove("hidden");
+  $("userMsg").classList.add("hidden");
+}
+function userFormPerms() {
+  const o = {};
+  document.querySelectorAll("#permGrid .uperm:checked").forEach(c => { o[c.value] = true; });
+  return o;
+}
+$("userForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const payload = { name: $("uName").value, email: $("uEmail").value, role: $("uRole").value, perms: userFormPerms() };
+  const pw = $("uPass").value;
+  if (pw) payload.password = pw;
+  try {
+    if (userEditId) await api("/api/admin/users/" + userEditId, { method: "PATCH", body: JSON.stringify(payload) });
+    else await api("/api/admin/users", { method: "POST", body: JSON.stringify(payload) });
+    userEditId = null; $("userForm").reset(); $("uPass").placeholder = ""; renderPermGrid({});
+    $("userSubmit").textContent = "Ajouter"; $("userCancel").classList.add("hidden");
+    loadUsers();
+  } catch (err) { const m = $("userMsg"); m.textContent = err.message; m.classList.remove("hidden"); }
+});
+$("userCancel").addEventListener("click", () => {
+  userEditId = null; $("userForm").reset(); $("uPass").placeholder = ""; renderPermGrid({});
+  $("userSubmit").textContent = "Ajouter"; $("userCancel").classList.add("hidden");
+});
+async function delUser(id) {
+  if (!confirm("Supprimer ce compte ?")) return;
+  try { await api("/api/admin/users/" + id, { method: "DELETE" }); loadUsers(); }
+  catch (e) { alert(e.message); }
+}
+
 /* ---------- Actualisation automatique (temps réel Messages) ---------- */
 let pollTimer = null;
 function startPolling() {
   stopPolling();
   pollTimer = setInterval(async () => {
     try {
-      await loadMessages();
-      await loadBookings();
-      await loadVisits();
-    } catch (e) { if (e && e.message === "Accès refusé") handleAuth(); }
+          if (can("messages")) await loadMessages();
+          if (can("bookings")) await loadBookings();
+          if (can("visits")) await loadVisits();
+        } catch (e) { if (e && e.message === "Accès refusé") handleAuth(); }
   }, 8000);
 }
 function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
 
 /* ---------- Session invalide ---------- */
 function handleAuth() {
-  aToken = ""; localStorage.removeItem(ATOKEN_KEY);
+  aToken = ""; me = null; localStorage.removeItem(ATOKEN_KEY);
   stopPolling();
   $("dashView").classList.add("hidden"); $("loginView").classList.remove("hidden");
 }
 
 /* ---------- Init ---------- */
+if (resetToken) {
+  window.history.replaceState({}, "", location.pathname);
+  $("loginView").classList.add("hidden");
+  $("resetView").classList.remove("hidden");
+}
 if (aToken) {
-  api("/api/admin/stats").then(() => enterDash()).catch(() => handleAuth());
+  api("/api/admin/stats").then(s => { me = s.me || null; renderPermGrid({}); enterDash(); }).catch(() => handleAuth());
 } else {
   handleAuth();
 }

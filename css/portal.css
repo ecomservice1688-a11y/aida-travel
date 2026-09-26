@@ -59,6 +59,8 @@ a{text-decoration:none;color:inherit}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--orange-deep);background:#fff}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.perm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 14px;padding:12px;background:#FDF9F2;border:1px solid var(--sand-3);border-radius:12px}
+.perm-grid label{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--night);text-transform:none;font-weight:500}
 .msg{font-size:13.5px;margin-top:10px;font-weight:600}
 .msg.ok{color:#1f9d5a}
 .msg.err{color:#D64545}

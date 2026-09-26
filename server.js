@@ -19,6 +19,18 @@ const ADMIN = {
   username: process.env.ADMIN_USER || "aida",
   password: process.env.ADMIN_PASS || "Aida@Djanet2026"
 };
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "aida@aida-travel.com").toLowerCase();
+const APP_URL = (process.env.URL || "https://aida-travel.onrender.com").replace(/\/+$/, "");
+
+/* Sections administrables (droit à cocher pour les membres de l'équipe) */
+const PERM_DEFS = [
+  ["bookings", "Réservations"], ["clients", "Clients"], ["messages", "Messages"],
+  ["tours", "Circuits"], ["departures", "Départs"], ["posts", "Articles"],
+  ["site", "Site (photos, équipe)"], ["visits", "Visites"], ["backup", "Sauvegarde"]
+];
+const ALL_PERMS = {};
+PERM_DEFS.forEach(([k]) => { ALL_PERMS[k] = true; });
+ALL_PERMS.users = true;
 
 const SEED_TOURS = [
   { id: "tadrart-rouge",     title: "Tadrart Rouge",                    loc: "Djanet",        price: 340,  days: "3 jours / 2 nuits", image: "img/tadrart.jpg",
@@ -150,10 +162,33 @@ function ensureSchema(db) {
   if (!Array.isArray(db.posts)) db.posts = seedPosts();
   if (!db.site) db.site = seedSite();
   if (!Array.isArray(db.visits)) db.visits = [];
+  if (!Array.isArray(db.users) || !db.users.length) db.users = seedSuperAdmin();
   migrateTours(db);
   return db;
 }
 
+/* ---------------- Comptes (équipe) ---------------- */
+function mkSalt() { return crypto.randomBytes(16).toString("hex"); }
+function hashPass(pw, salt) { return crypto.scryptSync(String(pw || ""), salt, 64).toString("hex"); }
+function seedSuperAdmin() {
+  const salt = mkSalt();
+  return [{
+    id: uid(), name: "Administrateur",
+    email: ADMIN_EMAIL,
+    role: "admin",
+    perms: Object.assign({}, ALL_PERMS),
+    salt,
+    passHash: hashPass(ADMIN.password, salt),
+    createdAt: new Date().toISOString()
+  }];
+}
+function pickPerms(p) {
+  const o = {};
+  PERM_DEFS.forEach(([k]) => { o[k] = !!(p && p[k]); });
+  return o;
+}
+
+const resetKeys = new Map(); // token -> { email, exp }
 const sessions = {}; // token -> { type: "client"|"admin", id? }
 
 /* ---------------- Utilitaires ---------------- */
@@ -455,22 +490,207 @@ api["GET /api/admin/backup"] = (req, res) => {
   res.end(payload);
 };
 
-/* --- Admin --- */
+/* --- Admin : authentification --- */
+function findUser(id) {
+  const e = String(id || "").trim().toLowerCase();
+  const db = loadDB();
+  let u = db.users.find(x => String(x.email).toLowerCase() === e);
+  if (!u && e === ADMIN.username.toLowerCase()) u = db.users.find(x => x.role === "admin");
+  return u;
+}
+function sessionView(s) {
+  return s ? { name: s.name, email: s.email.toLowerCase(), role: s.role, perms: s.perms, users: s.role === "admin" } : null;
+}
+
 api["POST /api/admin/login"] = async (req, res, body) => {
-  if (body.username === ADMIN.username && body.password === ADMIN.password) {
-    const t = token();
-    sessions[t] = { type: "admin" };
-    return send(res, 200, { token: t });
-  }
-  send(res, 401, { error: "Identifiants administrateur incorrects" });
+  const u = findUser(body.email || body.username);
+  if (!u) return send(res, 401, { error: "Identifiants incorrects" });
+  if (hashPass(body.password, u.salt) !== u.passHash) return send(res, 401, { error: "Identifiants incorrects" });
+  const t = token();
+  sessions[t] = { type: "admin", userId: u.id, name: u.name, email: u.email.toLowerCase(), role: u.role, perms: u.perms };
+  send(res, 200, { token: t, me: sessionView(sessions[t]) });
 };
 
 function needAdmin(req) {
   const t = new URL(req.url, "http://x").searchParams.get("admintoken")
     || (req.headers["x-admin-token"] || "");
   const s = sessions[t];
-  return s && s.type === "admin";
+  return s && s.type === "admin" ? s : null;
 }
+
+/* Vérifie l'authentification + le droit demandé (clé null = connecté suffit) */
+function guard(req, res, key) {
+  const s = needAdmin(req);
+  if (!s) { send(res, 401, { error: "Accès refusé" }); return null; }
+  if (key && s.role !== "admin" && !(s.perms && s.perms[key])) { send(res, 403, { error: "Accès refusé" }); return null; }
+  return s;
+}
+
+/* Droit requis pour chaque route admin (base sans l'id éventuel) */
+const RES_KEY = {
+  "GET /api/admin/visits": "visits",
+  "GET /api/admin/backup": "backup",
+  "GET /api/admin/bookings": "bookings",
+  "PATCH /api/admin/bookings": "bookings",
+  "POST /api/admin/bookings": "bookings",
+  "GET /api/admin/clients": "clients",
+  "GET /api/admin/messages": "messages",
+  "POST /api/admin/messages/read": "messages",
+  "POST /api/admin/messages/validate": "messages",
+  "DELETE /api/admin/messages": "messages",
+  "GET /api/admin/tours": "tours",
+  "POST /api/admin/tours": "tours",
+  "PATCH /api/admin/tours": "tours",
+  "DELETE /api/admin/tours": "tours",
+  "PATCH /api/admin/site": "site",
+  "GET /api/admin/departures": "departures",
+  "POST /api/admin/departures": "departures",
+  "PATCH /api/admin/departures": "departures",
+  "DELETE /api/admin/departures": "departures",
+  "POST /api/admin/posts": "posts",
+  "PATCH /api/admin/posts": "posts",
+  "DELETE /api/admin/posts": "posts",
+  "GET /api/admin/users": "users",
+  "POST /api/admin/users": "users",
+  "PATCH /api/admin/users": "users",
+  "DELETE /api/admin/users": "users"
+};
+function adminKey(p) {
+  const m = p.match(/^(\w+) \/api\/admin\/([a-z]+)(?:\/[^/]+)?$/);
+  return m ? RES_KEY[m[1] + " /api/admin/" + m[2]] : null;
+}
+/* Garde-fou central : appliqué à toutes les routes admin avant dispatch */
+function enforcePerm(req, res, key) {
+  if (!key) return true;
+  const s = needAdmin(req);
+  if (!s) { send(res, 401, { error: "Accès refusé" }); return false; }
+  if (s.role !== "admin" && !(s.perms && s.perms[key])) { send(res, 403, { error: "Accès refusé" }); return false; }
+  return true;
+}
+
+/* --- Mot de passe oublié / réinitialisation --- */
+let transporter = null;
+if (process.env.SMTP_HOST) {
+  try {
+    transporter = require("nodemailer").createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || "465", 10),
+      secure: String(process.env.SMTP_PORT || "465") === "465",
+      auth: { user: process.env.SMTP_USER || "", pass: process.env.SMTP_PASS || "" }
+    });
+  } catch (e) { console.error("SMTP indisponible :", e.message); }
+}
+async function sendRecoveryMail(to, token) {
+  const link = APP_URL + "/admin.html?reset=" + token;
+  const text = "Bonjour,\n\nPour réinitialiser le mot de passe de l'espace admin Aida Travel, cliquez sur ce lien (valable 15 minutes) :\n\n" + link + "\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.\n";
+  if (transporter) {
+    await transporter.sendMail({
+      from: "Aida Travel Admin <" + (process.env.SMTP_USER || ADMIN_EMAIL) + ">",
+      to, subject: "Réinitialisation du mot de passe admin", text
+    });
+    return "email";
+  }
+  console.log("[RECUP-MDP] lien de réinitialisation admin pour " + to + " : " + link);
+  return "console";
+}
+
+api["POST /api/admin/forgot"] = async (req, res, body) => {
+  const u = findUser(body.email);
+  if (u) {
+    const t = token();
+    resetKeys.set(t, { email: u.email, exp: Date.now() + 15 * 60 * 1000 });
+    try {
+      const via = await sendRecoveryMail(u.email, t);
+      return send(res, 200, { ok: true, via });
+    } catch (err) {
+      console.error("Envoi e-mail échoué :", err.message);
+      return send(res, 200, { ok: true, via: "errcourriel" });
+    }
+  }
+  send(res, 200, { ok: true, via: "none" });
+};
+
+api["POST /api/admin/reset"] = async (req, res, body) => {
+  const t = String(body.token || "");
+  const k = resetKeys.get(t);
+  if (!k || k.exp < Date.now()) return send(res, 400, { error: "Lien invalide ou expiré. Refaites « mot de passe oublié »." });
+  const pw = String(body.password || "");
+  if (pw.length < 8) return send(res, 400, { error: "Le mot de passe doit contenir au moins 8 caractères" });
+  const db = loadDB();
+  const u = db.users.find(x => String(x.email).toLowerCase() === String(k.email).toLowerCase());
+  if (!u) return send(res, 404, { error: "Compte introuvable" });
+  u.salt = mkSalt();
+  u.passHash = hashPass(pw, u.salt);
+  saveDB(db);
+  resetKeys.delete(t);
+  send(res, 200, { ok: true });
+};
+
+/* --- Admin : équipe (comptes) --- */
+api["GET /api/admin/users"] = (req, res) => {
+  if (!guard(req, res, "users")) return;
+  const db = loadDB();
+  send(res, 200, db.users.map(u => ({
+    id: u.id, name: u.name, email: u.email, role: u.role, perms: u.perms, createdAt: u.createdAt
+  })));
+};
+api["POST /api/admin/users"] = async (req, res, body) => {
+  if (!guard(req, res, "users")) return;
+  const name = String(body.name || "").trim();
+  const email = String(body.email || "").trim().toLowerCase();
+  const pw = String(body.password || "");
+  if (!name || !email || pw.length < 8) return send(res, 400, { error: "Nom, e-mail et mot de passe (8 caractères min) requis" });
+  const db = loadDB();
+  if (db.users.some(x => String(x.email).toLowerCase() === email)) return send(res, 400, { error: "Cet e-mail est déjà utilisé" });
+  const salt = mkSalt();
+  db.users.push({
+    id: uid(), name, email,
+    role: body.role === "admin" ? "admin" : "membre",
+    perms: pickPerms(body.perms),
+    salt,
+    passHash: hashPass(pw, salt),
+    createdAt: new Date().toISOString()
+  });
+  saveDB(db);
+  send(res, 201, { ok: true });
+};
+api["PATCH /api/admin/users"] = async (req, res, body) => {
+  if (!guard(req, res, "users")) return;
+  const id = new URL(req.url, "http://x").pathname.split("/").pop();
+  const db = loadDB();
+  const u = db.users.find(x => x.id === id);
+  if (!u) return send(res, 404, { error: "Compte introuvable" });
+  if (u.role === "admin" && body.role && body.role !== "admin")
+    return send(res, 400, { error: "Un administrateur ne peut pas être rétrogradé" });
+  if (body.name !== undefined) u.name = String(body.name).trim();
+  if (body.email !== undefined) {
+    const ne = String(body.email).trim().toLowerCase();
+    if (db.users.some(x => x.id !== id && String(x.email).toLowerCase() === ne))
+      return send(res, 400, { error: "E-mail déjà utilisé" });
+    u.email = ne;
+  }
+  if (body.role === "admin") u.role = "admin";
+  if (body.perms) u.perms = pickPerms(body.perms);
+  if (body.password) {
+    if (String(body.password).length < 8) return send(res, 400, { error: "Le mot de passe doit contenir au moins 8 caractères" });
+    u.salt = mkSalt();
+    u.passHash = hashPass(body.password, u.salt);
+  }
+  saveDB(db);
+  send(res, 200, { ok: true });
+};
+api["DELETE /api/admin/users"] = (req, res) => {
+  if (!guard(req, res, "users")) return;
+  const id = new URL(req.url, "http://x").pathname.split("/").pop();
+  const db = loadDB();
+  const u = db.users.find(x => x.id === id);
+  if (!u) return send(res, 404, { error: "Compte introuvable" });
+  if (u.role === "admin" && db.users.filter(x => x.role === "admin").length <= 1)
+    return send(res, 400, { error: "Il faut garder au moins un administrateur" });
+  db.users = db.users.filter(x => x.id !== id);
+  saveDB(db);
+  send(res, 200, { ok: true });
+};
 
 api["GET /api/admin/stats"] = (req, res) => {
   if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
@@ -483,7 +703,8 @@ api["GET /api/admin/stats"] = (req, res) => {
     messages: db.messages.length,
     revenue,
     pending: db.bookings.filter(b => b.status === "pending").length,
-    visits: db.visits.length
+    visits: db.visits.length,
+    me: sessionView(needAdmin(req))
   });
 };
 
@@ -881,6 +1102,9 @@ async function serveApi(req, res) {
     return send(res, 400, { error: e.message });
   }
 
+  const permKey = adminKey(p);
+  if (permKey && !enforcePerm(req, res, permKey)) return;
+
   if (req.method === "PATCH" && /\/bookings\/[^/]+$/.test(pathname))
     return api["PATCH /api/admin/bookings"](req, res, body);
   if (req.method === "DELETE" && /\/messages\/[^/]+$/.test(pathname))
@@ -897,6 +1121,10 @@ async function serveApi(req, res) {
     return api["PATCH /api/admin/posts"](req, res, body);
   if (req.method === "DELETE" && /\/posts\/[^/]+$/.test(pathname))
     return api["DELETE /api/admin/posts"](req, res, body);
+  if (req.method === "PATCH" && /\/users\/[^/]+$/.test(pathname))
+    return api["PATCH /api/admin/users"](req, res, body);
+  if (req.method === "DELETE" && /\/users\/[^/]+$/.test(pathname))
+    return api["DELETE /api/admin/users"](req, res, body);
   if (req.method === "GET" && /\/api\/posts\/[^/]+$/.test(pathname))
     return api["GET /api/posts/id"](req, res);
   if (req.method === "GET" && /\/api\/bookings\/[^/]+\/pdf$/.test(pathname))
