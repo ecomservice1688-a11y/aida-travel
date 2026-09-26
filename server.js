@@ -1152,7 +1152,11 @@ function serveStatic(req, res) {
       res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
       return res.end("<h1>404</h1><p>Fichier introuvable.</p>");
     }
-    res.writeHead(200, { "Content-Type": MIME[path.extname(file).toLowerCase()] || "application/octet-stream" });
+    const mime = MIME[path.extname(file).toLowerCase()] || "application/octet-stream";
+    const noCache = [".html", ".js", ".css", ".json"].includes(path.extname(file).toLowerCase());
+    const headers = { "Content-Type": mime };
+    if (noCache) headers["Cache-Control"] = "no-store";
+    res.writeHead(200, headers);
     res.end(data);
   });
 }
