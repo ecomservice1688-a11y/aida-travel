@@ -13,8 +13,6 @@ let aToken = localStorage.getItem(ATOKEN_KEY) || "";
 let me = null;                                  // profil de la session (nom, email, rôle, droits)
 let resetToken = new URLSearchParams(location.search).get("reset");
 
-if ($("verBadge")) $("verBadge").textContent = "v3 — page " + (new Date().toISOString());
-
 const TAB_PERM = { bookings: "bookings", clients: "clients", messages: "messages", tours: "tours", departures: "departures", posts: "posts", site: "site", visits: "visits", users: "users" };
 const PERM_LABELS = { bookings: "Réservations", clients: "Clients", messages: "Messages", tours: "Circuits", departures: "Départs", posts: "Articles", site: "Site", visits: "Visites" };
 function can(key) { return !!(me && (me.role === "admin" || (me.perms && me.perms[key]))); }
