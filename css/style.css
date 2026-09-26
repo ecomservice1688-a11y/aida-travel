@@ -81,6 +81,7 @@ h1,h2,h3,h4,h5{font-family:var(--font-head);line-height:1.2}
 /* ------- Hero ------- */
 .hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;background:linear-gradient(135deg,#8A5A2B,#C9773F 55%,#E8A05F)}
 .hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;background-color:var(--sand-3);}
+@media(min-width:900px){.hero-bg{background-image:url('../img/hero-djanet.jpg') !important}}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(27,42,65,.55) 0%,rgba(27,42,65,.25) 45%,rgba(16,24,38,.85) 100%)}
 .hero-content{position:relative;z-index:2;color:#fff;max-width:820px;padding:0 20px}
 .hero-badge{display:inline-block;background:rgba(217,108,59,.9);padding:9px 20px;border-radius:999px;font-size:13px;letter-spacing:1px;font-weight:500;margin-bottom:26px}
