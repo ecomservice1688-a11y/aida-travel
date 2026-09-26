@@ -1156,6 +1156,17 @@ function serveStatic(req, res) {
   let pathname = decodeURIComponent(new URL(req.url, "http://x").pathname);
   if (pathname === "/") pathname = "/index.html";
   if (pathname === "/admin" || pathname === "/admin/") pathname = "/admin.html";
+  if (pathname === "/favicon.ico") {
+    fs.readFile(path.resolve(ROOT, "logo.svg"), (err, data) => {
+      if (err) {
+        res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
+        return res.end("<h1>404</h1><p>Fichier introuvable.</p>");
+      }
+      res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "no-store" });
+      res.end(data);
+    });
+    return;
+  }
   if (pathname === "/client.html") {
     res.writeHead(302, { "Location": "/#contact" });
     return res.end();
