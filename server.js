@@ -26,7 +26,7 @@ const APP_URL = (process.env.URL || "https://aida-travel.onrender.com").replace(
 const PERM_DEFS = [
   ["bookings", "Réservations"], ["clients", "Clients"], ["messages", "Messages"],
   ["tours", "Circuits"], ["departures", "Départs"], ["posts", "Articles"],
-  ["site", "Site (photos, équipe)"], ["visits", "Visites"], ["backup", "Sauvegarde"]
+  ["site", "Site (photos, équipe)"], ["visits", "Visites"]
 ];
 const ALL_PERMS = {};
 PERM_DEFS.forEach(([k]) => { ALL_PERMS[k] = true; });
@@ -477,19 +477,6 @@ api["GET /api/admin/visits"] = (req, res) => {
   send(res, 200, { total: visits.length, today: today.length, unique: uniq.size, top, recent: visits.slice(0, 25) });
 };
 
-api["GET /api/admin/backup"] = (req, res) => {
-  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
-  const db = loadDB();
-  const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
-  const payload = JSON.stringify({ exportedAt: new Date().toISOString(), app: "Aida Travel", data: db }, null, 2);
-  res.writeHead(200, {
-    "Content-Type": "application/json; charset=utf-8",
-    "Content-Disposition": 'attachment; filename="aida-backup-' + stamp + '.json"',
-    "Content-Length": Buffer.byteLength(payload)
-  });
-  res.end(payload);
-};
-
 /* --- Admin : authentification --- */
 function findUser(id) {
   const e = String(id || "").trim().toLowerCase();
@@ -531,7 +518,6 @@ function guard(req, res, key) {
 /* Droit requis pour chaque route admin (base sans l'id éventuel) */
 const RES_KEY = {
   "GET /api/admin/visits": "visits",
-  "GET /api/admin/backup": "backup",
   "GET /api/admin/bookings": "bookings",
   "PATCH /api/admin/bookings": "bookings",
   "POST /api/admin/bookings": "bookings",

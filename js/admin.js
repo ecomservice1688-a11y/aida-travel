@@ -16,7 +16,7 @@ let resetToken = new URLSearchParams(location.search).get("reset");
 if ($("verBadge")) $("verBadge").textContent = "v3 — page " + (new Date().toISOString());
 
 const TAB_PERM = { bookings: "bookings", clients: "clients", messages: "messages", tours: "tours", departures: "departures", posts: "posts", site: "site", visits: "visits", users: "users" };
-const PERM_LABELS = { bookings: "Réservations", clients: "Clients", messages: "Messages", tours: "Circuits", departures: "Départs", posts: "Articles", site: "Site", visits: "Visites", backup: "Sauvegarde" };
+const PERM_LABELS = { bookings: "Réservations", clients: "Clients", messages: "Messages", tours: "Circuits", departures: "Départs", posts: "Articles", site: "Site", visits: "Visites" };
 function can(key) { return !!(me && (me.role === "admin" || (me.perms && me.perms[key]))); }
 
 async function api(path, opts = {}) {
@@ -92,28 +92,11 @@ $("logoutBtn").addEventListener("click", () => {
   $("dashView").classList.add("hidden"); $("loginView").classList.remove("hidden");
 });
 
-$("backupBtn").addEventListener("click", async () => {
-  $("backupBtn").textContent = "⏳ Sauvegarde…";
-  try {
-    const r = await fetch("/api/admin/backup", { headers: { "X-Admin-Token": aToken } });
-    if (!r.ok) { const e = await r.json().catch(() => ({ error: "Erreur" })); throw new Error(e.error || "Erreur"); }
-    const blob = await r.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = blob.name || ("aida-backup-" + new Date().toISOString().slice(0, 10) + ".json");
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-  } catch (e) { alert("Échec de la sauvegarde : " + e.message); }
-  $("backupBtn").textContent = "💾 Sauvegarde";
-});
-
 function enterDash() {
   $("loginView").classList.add("hidden");
   $("dashView").classList.remove("hidden");
   $("barUser").textContent = me.name + (me.role === "admin" ? " · (admin)" : "");
   $("logoutBtn").classList.remove("hidden");
-  $("backupBtn").classList.toggle("hidden", !can("backup"));
   document.querySelectorAll(".tab[data-tab]").forEach(tab => {
     const k = TAB_PERM[tab.dataset.tab];
     tab.classList.toggle("hidden", !can(k));
