@@ -463,6 +463,7 @@ $("postCancel").addEventListener("click", () => {
 });
 
 /* ---------- Site (admin) ---------- */
+let gallery = [];
 function bindSiteUpload(fileId, urlId, prevId) {
   $(fileId).addEventListener("change", async e => {
     const f = e.target.files[0];
@@ -490,9 +491,65 @@ async function loadSiteData() {
       $("sTeam" + i + "Photo").value = m.photo || "";
       $("sTeam" + i + "Prev").src = m.photo || "";
     });
-    $("sGallery").value = (s.gallery || []).join("\n");
+    gallery = (s.gallery || []).slice(0, 12);
+    renderGallery();
   } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
 }
+function renderGallery() {
+  const wrap = $("galList");
+  if (!gallery.length) { wrap.innerHTML = '<p class="muted empty">Aucune photo. Ajoutez des photos ci-dessous.</p>'; }
+  else {
+    wrap.innerHTML = gallery.map((url, i) => `
+      <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--sand-2);border-radius:10px;padding:6px 10px">
+        <img src="${esc(url)}" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px;flex-shrink:0">
+        <span class="muted" style="flex:1;font-size:11px;word-break:break-all;line-height:1.4">${i + 1}. ${esc(url)}</span>
+        <button type="button" class="btn small ghost" data-gmove="${i}:up" title="Monter">↑</button>
+        <button type="button" class="btn small ghost" data-gmove="${i}:down" title="Descendre">↓</button>
+        <button type="button" class="btn small danger" data-gdel="${i}" title="Retirer">✕</button>
+      </div>`).join("");
+  }
+  $("sGallery").value = gallery.join("\n");
+  const msg = $("galMsg");
+  msg.textContent = gallery.length + "/12 photo(s) — utilisez ↑ ↓ pour ordonner, ✕ pour retirer.";
+}
+$("galList").addEventListener("click", e => {
+  const mv = e.target.closest("[data-gmove]");
+  const del = e.target.closest("[data-gdel]");
+  if (mv) {
+    const [i, dir] = mv.dataset.gmove.split(":");
+    const x = +i, y = dir === "up" ? x - 1 : x + 1;
+    if (y < 0 || y >= gallery.length) return;
+    [gallery[x], gallery[y]] = [gallery[y], gallery[x]];
+    renderGallery();
+  } else if (del) {
+    gallery.splice(+del.dataset.gdel, 1);
+    renderGallery();
+  }
+});
+$("gFile").addEventListener("change", async e => {
+  const files = Array.from(e.target.files || []);
+  e.target.value = "";
+  if (!files.length) return;
+  const btn = $("gAddUrl"); btn.textContent = "Envoi des photos…"; btn.disabled = true;
+  try {
+    for (const f of files) {
+      if (gallery.length >= 12) { alert("Maximum 12 photos atteint."); break; }
+      const up = await readFileAsBase64(f);
+      const resp = await api("/api/admin/upload", { method: "POST", body: JSON.stringify(up) });
+      gallery.push(resp.url);
+      renderGallery();
+    }
+  } catch (err) { alert("Erreur d'envoi : " + err.message); }
+  finally { btn.textContent = "Ajouter l'URL"; btn.disabled = false; }
+});
+$("gAddUrl").addEventListener("click", () => {
+  if (gallery.length >= 12) { alert("Maximum 12 photos atteint."); return; }
+  const url = $("gUrl").value.trim();
+  if (!url) return;
+  gallery.push(url);
+  $("gUrl").value = "";
+  renderGallery();
+});
 $("siteForm").addEventListener("submit", async e => {
   e.preventDefault();
   const team = [0, 1, 2].map(i => ({

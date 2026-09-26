@@ -250,8 +250,18 @@
           </div>
 
           <div class="field" style="margin-top:18px">
-            <label>Galerie « Le Sahara en images » (une URL par ligne, max 12)</label>
-            <textarea id="sGallery" rows="8"></textarea>
+            <label>Galerie « Le Sahara en images » (max 12 photos)</label>
+            <div id="galList" style="display:flex;flex-direction:column;gap:8px;margin:8px 0 12px"></div>
+            <div class="row2" style="align-items:center">
+              <input type="file" id="gFile" accept="image/*" multiple>
+              <span class="muted" style="font-size:12px">Choisissez une ou plusieurs photos de votre appareil</span>
+            </div>
+            <div class="row2" style="align-items:center;margin-top:8px">
+              <input type="text" id="gUrl" placeholder="… ou collez l'adresse d'une image (URL)">
+              <button type="button" class="btn small ghost" id="gAddUrl">Ajouter l'URL</button>
+            </div>
+            <input type="hidden" id="sGallery">
+            <p class="muted" id="galMsg" style="margin-top:8px"></p>
           </div>
           <button type="submit" class="btn">Enregistrer le site</button>
           <span class="muted" id="siteSaved" style="margin-left:12px"></span>
