@@ -153,16 +153,6 @@ function ensureSchema(db) {
   migrateTours(db);
   return db;
 }
-function loadDB() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DB_FILE)) {
-    saveDB(ensureSchema({ tours: SEED_TOURS, clients: [], bookings: [], messages: [] }));
-  }
-  return ensureSchema(JSON.parse(fs.readFileSync(DB_FILE, "utf8")));
-}
-function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-}
 
 const sessions = {}; // token -> { type: "client"|"admin", id? }
 
