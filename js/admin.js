@@ -603,23 +603,9 @@ async function loadVisits() {
             <span class="ccount">${c.count}</span>
           </li>`).join("")
       : `<li class="muted">Pas encore de données.</li>`;
-    const tb = $("visitTable");
-    $("visitEmpty").classList.toggle("hidden", v.recent.length > 0);
-    tb.innerHTML = v.recent.map(r => `
-      <tr>
-        <td><b>${esc(r.page)}</b><small>${r.ref ? "<br>" + esc(String(r.ref).slice(0, 40)) : ""}</small></td>
-        <td>${esc(r.country || "—")}</td>
-        <td class="muted">${maskIp(r.ip)}</td>
-        <td class="muted">${fmtDate(new Date(r.at).toISOString())} · ${new Date(r.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</td>
-      </tr>`).join("");
   } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
 }
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
-function maskIp(ip) {
-  if (!ip) return "—";
-  const parts = String(ip).split(".");
-  return parts.length === 4 ? parts[0] + "." + parts[1] + ".*.*" : "·".repeat(String(ip).length);
-}
 
 /* ---------- Mot de passe oublié ---------- */
 $("forgotLink").addEventListener("click", e => { e.preventDefault(); $("forgotBox").classList.toggle("hidden"); });
