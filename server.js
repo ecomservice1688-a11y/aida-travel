@@ -520,8 +520,10 @@ const RES_KEY = {
   "GET /api/admin/visits": "visits",
   "GET /api/admin/bookings": "bookings",
   "PATCH /api/admin/bookings": "bookings",
+  "DELETE /api/admin/bookings": "bookings",
   "POST /api/admin/bookings": "bookings",
   "GET /api/admin/clients": "clients",
+  "DELETE /api/admin/clients": "clients",
   "GET /api/admin/messages": "messages",
   "POST /api/admin/messages/read": "messages",
   "POST /api/admin/messages/validate": "messages",
@@ -714,6 +716,17 @@ api["PATCH /api/admin/bookings"] = async (req, res, body) => {
   send(res, 200, { ok: true, booking: b });
 };
 
+api["DELETE /api/admin/bookings"] = async (req, res) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const id = new URL(req.url, "http://x").pathname.split("/").pop();
+  const db = loadDB();
+  const b = db.bookings.find(x => x.id === id);
+  if (!b) return send(res, 404, { error: "Réservation introuvable" });
+  db.bookings = db.bookings.filter(x => x.id !== id);
+  saveDB(db);
+  send(res, 200, { ok: true });
+};
+
 api["GET /api/admin/clients"] = (req, res) => {
   if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
   const db = loadDB();
@@ -723,6 +736,18 @@ api["GET /api/admin/clients"] = (req, res) => {
     bookings: db.bookings.filter(b => b.clientId === c.id).length
   }));
   send(res, 200, clients);
+};
+
+api["DELETE /api/admin/clients"] = async (req, res) => {
+  if (!needAdmin(req)) return send(res, 401, { error: "Accès refusé" });
+  const id = new URL(req.url, "http://x").pathname.split("/").pop();
+  const db = loadDB();
+  const c = db.clients.find(x => x.id === id);
+  if (!c) return send(res, 404, { error: "Client introuvable" });
+  db.clients = db.clients.filter(x => x.id !== id);
+  db.bookings = db.bookings.filter(b => b.clientId !== id);
+  saveDB(db);
+  send(res, 200, { ok: true });
 };
 
 /* --- Admin : réservation manuelle --- */
@@ -1095,6 +1120,10 @@ async function serveApi(req, res) {
 
   if (req.method === "PATCH" && /\/bookings\/[^/]+$/.test(pathname))
     return api["PATCH /api/admin/bookings"](req, res, body);
+  if (req.method === "DELETE" && /\/bookings\/[^/]+$/.test(pathname))
+    return api["DELETE /api/admin/bookings"](req, res, body);
+  if (req.method === "DELETE" && /\/clients\/[^/]+$/.test(pathname))
+    return api["DELETE /api/admin/clients"](req, res, body);
   if (req.method === "DELETE" && /\/messages\/[^/]+$/.test(pathname))
     return api["DELETE /api/admin/messages"](req, res, body);
   if (req.method === "PATCH" && /\/tours\/[^/]+$/.test(pathname))

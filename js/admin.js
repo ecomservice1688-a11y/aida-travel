@@ -191,6 +191,7 @@ async function loadBookings() {
               `<option value="${s}" ${b.status === s ? "selected" : ""}>${STATUS_LABELS[s]}</option>`).join("")}
           </select>
         </td>
+        <td style="white-space:nowrap"><button type="button" class="btn small danger" data-del-book="${b.id}">Supprimer</button></td>
       </tr>
     `).join("");
     tb.querySelectorAll(".status").forEach(sel => {
@@ -204,6 +205,7 @@ async function loadBookings() {
         } catch (e) { alert(e.message); loadBookings(); }
       });
     });
+    tb.querySelectorAll("[data-del-book]").forEach(b => b.addEventListener("click", () => delBooking(b.dataset.delBook)));
   } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
 }
 
@@ -222,8 +224,23 @@ async function loadClients() {
         <td>${ctaBtns(c.email, c.phone)}</td>
         <td>${c.bookings}</td>
         <td><small>${fmtDate(c.createdAt)}</small></td>
+        <td style="white-space:nowrap">
+          <button type="button" class="btn small danger" data-del-clien="${c.id}">Supprimer</button>
+</td>
       </tr>`).join("");
+    tb.querySelectorAll("[data-del-clien]").forEach(b => b.addEventListener("click", () => delClient(b.dataset.delClien)));
   } catch (e) { if (e.message === "Accès refusé") handleAuth(); }
+}
+
+async function delClient(id) {
+  if (!confirm("Supprimer ce client et ses réservations ?")) return;
+  try { await api("/api/admin/clients/" + id, { method: "DELETE" }); loadClients(); loadBookings(); loadStats(); }
+  catch (e) { alert(e.message); }
+}
+async function delBooking(id) {
+  if (!confirm("Supprimer cette réservation ?")) return;
+  try { await api("/api/admin/bookings/" + id, { method: "DELETE" }); loadBookings(); loadClients(); loadStats(); }
+  catch (e) { alert(e.message); }
 }
 
 /* ---------- Messages ---------- */
