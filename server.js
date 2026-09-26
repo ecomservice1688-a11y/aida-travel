@@ -1138,6 +1138,7 @@ async function serveApi(req, res) {
 function serveStatic(req, res) {
   let pathname = decodeURIComponent(new URL(req.url, "http://x").pathname);
   if (pathname === "/") pathname = "/index.html";
+  if (pathname === "/admin" || pathname === "/admin/") pathname = "/admin.html";
   if (pathname === "/client.html") {
     res.writeHead(302, { "Location": "/#contact" });
     return res.end();
