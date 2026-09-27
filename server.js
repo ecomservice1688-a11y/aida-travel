@@ -1206,5 +1206,16 @@ initStore().catch(e => {
     console.log("  Admin : " + ADMIN.username + " / " + ADMIN.password);
     console.log("  Stockage : " + (MONGO ? "MongoDB en ligne" : "fichier data/db.json (local)"));
     console.log("==============================================");
+    keepAlive();
   });
 });
+
+function keepAlive() {
+  const url = (process.env.RENDER_EXTERNAL_URL || "https://aida-travel.onrender.com") + "/robots.txt";
+  setInterval(() => {
+    try {
+      fetch(url, { signal: AbortSignal.timeout(20000) }).catch(() => {});
+    } catch (e) { /* silencieux */ }
+  }, 240000);
+  console.log("  Keep-alive : auto-réveil toutes les 4 min -> " + url);
+}
