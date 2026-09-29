@@ -191,15 +191,47 @@ function pickPerms(p) {
 const resetKeys = new Map(); // token -> { email, exp }
 const sessions = {}; // token -> { type: "client"|"admin", id? }
 
+/* --- Anti brute-force (simple, en mémoire) --- */
+const rateHits = new Map(); // clé -> { hits:[ts], blockedUntil }
+function rateGuard(key, limit, windowMs, blockMs) {
+  const now = Date.now();
+  let r = rateHits.get(key);
+  if (!r) { r = { hits: [], blockedUntil: 0 }; rateHits.set(key, r); }
+  if (r.blockedUntil > now) return { blocked: true, wait: Math.ceil((r.blockedUntil - now) / 1000) };
+  r.hits = r.hits.filter(t => t > now - windowMs);
+  if (r.hits.length >= limit) {
+    r.blockedUntil = now + blockMs;
+    return { blocked: true, wait: Math.ceil(blockMs / 1000) };
+  }
+  r.hits.push(now);
+  return { blocked: false };
+}
+function rateClear(key) {
+  rateHits.delete(key);
+}
+
 /* ---------------- Utilitaires ---------------- */
 const uid = () => crypto.randomBytes(4).toString("hex").toUpperCase();
 const token = () => crypto.randomBytes(24).toString("hex");
 
-function readBody(req) {
+const SEC_H = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "Content-Security-Policy": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; frame-src https://maps.google.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+};
+
+function readBody(req, maxBytes = 524288) {
   return new Promise((resolve, reject) => {
-    let d = "";
-    req.on("data", c => (d += c));
+    let d = "", size = 0, over = false;
+    req.on("data", c => {
+      size += c.length;
+      if (size > maxBytes) { over = true; req.destroy(); return; }
+      d += c;
+    });
     req.on("end", () => {
+      if (over) return reject(new Error("Payload trop volumineux"));
       try { resolve(d ? JSON.parse(d) : {}); } catch (e) { reject(new Error("JSON invalide")); }
     });
     req.on("error", reject);
@@ -208,10 +240,10 @@ function readBody(req) {
 
 function send(res, code, obj) {
   const payload = JSON.stringify(obj);
-  res.writeHead(code, {
+  res.writeHead(code, Object.assign({}, SEC_H, {
     "Content-Type": "application/json; charset=utf-8",
     "Content-Length": Buffer.byteLength(payload)
-  });
+  }));
   res.end(payload);
 }
 
@@ -299,11 +331,16 @@ const api = {};
 api["POST /api/register"] = async (req, res, body) => {
   const { name, email, phone, password } = body;
   if (!name || !email || !password) return send(res, 400, { error: "Champs manquants" });
+  const rl = rateGuard("register:" + clientIp(req), 5, 60 * 60 * 1000, 60 * 60 * 1000);
+  if (rl.blocked) return send(res, 429, { error: "Trop de comptes créés. Réessayez plus tard." });
+  const e = String(email).trim().toLowerCase();
+  if (name.length > 80 || e.length > 120 || String(password).length > 100) return send(res, 400, { error: "Champ trop long" });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return send(res, 400, { error: "Adresse email invalide" });
   const db = loadDB();
-  if (db.clients.find(c => c.email.toLowerCase() === email.toLowerCase()))
+  if (db.clients.find(c => c.email.toLowerCase() === e))
     return send(res, 409, { error: "Un compte existe déjà avec cet email" });
   if (password.length < 4) return send(res, 400, { error: "Mot de passe trop court (min 4)" });
-  const client = { id: uid(), name, email, phone: phone || "", password, createdAt: new Date().toISOString() };
+  const client = { id: uid(), name, email: e, phone: phone || "", password, createdAt: new Date().toISOString() };
   db.clients.push(client);
   saveDB(db);
   const t = token();
@@ -313,9 +350,13 @@ api["POST /api/register"] = async (req, res, body) => {
 
 api["POST /api/login"] = async (req, res, body) => {
   const { email, password } = body;
+  const key = "login-client:" + String(email || "").toLowerCase().trim();
+  const rl = rateGuard(key, 6, 15 * 60 * 1000, 15 * 60 * 1000);
+  if (rl.blocked) return send(res, 429, { error: "Trop de tentatives. Réessayez dans " + rl.wait + " s." });
   const db = loadDB();
   const client = db.clients.find(c => c.email.toLowerCase() === (email || "").toLowerCase() && c.password === password);
   if (!client) return send(res, 401, { error: "Email ou mot de passe incorrect" });
+  rateClear(key);
   const t = token();
   sessions[t] = { type: "client", id: client.id };
   send(res, 200, { token: t, name: client.name, email: client.email });
@@ -408,12 +449,17 @@ api["GET /api/bookings"] = (req, res) => {
 
 /* --- Messages (formulaire contact) --- */
 api["POST /api/contact"] = async (req, res, body) => {
-  const { name, email, message, subject = "", phone = "" } = body;
+  const fmt = s => String(s || "").replace(/[\u0000-\u001f]/g, " ").trim();
+  const name = fmt(body.name), email = fmt(body.email).toLowerCase();
+  const subject = fmt(body.subject), message = fmt(body.message), phone = fmt(body.phone);
   if (!name || !email || !message) return send(res, 400, { error: "Champs manquants" });
-  if (!validPhone(phone)) return send(res, 400, { error: "Le numéro de téléphone semble incorrect" });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return send(res, 400, { error: "Adresse email invalide" });
+  if (name.length > 80 || email.length > 120 || subject.length > 120 || message.length > 4000)
+    return send(res, 400, { error: "Un champ est trop long" });
+  if (phone && !validPhone(phone)) return send(res, 400, { error: "Le numéro de téléphone semble incorrect" });
   const db = loadDB();
   upsertClient(db, name, email, phone);
-  db.messages.push({ id: uid(), name, email, phone: String(phone || "").trim(), subject, message, read: false, validated: false, createdAt: new Date().toISOString() });
+  db.messages.push({ id: uid(), name, email, phone, subject, message, read: false, validated: false, createdAt: new Date().toISOString() });
   saveDB(db);
   send(res, 201, { ok: true });
 };
@@ -491,9 +537,13 @@ function sessionView(s) {
 
 api["POST /api/admin/login"] = async (req, res, body) => {
   const ident = String(body.email || body.username || "");
+  const key = "login-admin:" + String(ident).toLowerCase().trim();
+  const rl = rateGuard(key, 6, 15 * 60 * 1000, 60 * 60 * 1000);
+  if (rl.blocked) return send(res, 429, { error: "Trop de tentatives. Réessayez dans " + rl.wait + " s." });
   const u = findUser(body.email || body.username);
   if (!u) { console.log("[CNX] echec inconnu id=" + ident); return send(res, 401, { error: "Identifiants incorrects" }); }
   if (hashPass(body.password, u.salt) !== u.passHash) { console.log("[CNX] echec mot de passe id=" + ident); return send(res, 401, { error: "Identifiants incorrects" }); }
+  rateClear(key);
   const t = token();
   sessions[t] = { type: "admin", userId: u.id, name: u.name, email: u.email.toLowerCase(), role: u.role, perms: u.perms };
   console.log("[CNX] OK id=" + ident + " role=" + u.role);
@@ -585,6 +635,8 @@ async function sendRecoveryMail(to, token) {
 }
 
 api["POST /api/admin/forgot"] = async (req, res, body) => {
+  const rl = rateGuard("forgot:" + String(body.email || "").toLowerCase().trim(), 3, 15 * 60 * 1000, 15 * 60 * 1000);
+  if (rl.blocked) return send(res, 429, { error: "Trop de demandes. Réessayez dans " + rl.wait + " s." });
   const u = findUser(body.email);
   if (u) {
     const t = token();
@@ -1092,11 +1144,11 @@ api["GET /api/bookings/pdf"] = (req, res) => {
   if (!isAdmin && !okClient) return send(res, 403, { error: "Accès refusé" });
   const tour = db.tours.find(t => t.id === b.tourId);
   const pdf = buildInvoice(b, tour);
-  res.writeHead(200, {
+  res.writeHead(200, Object.assign({}, SEC_H, {
     "Content-Type": "application/pdf",
     "Content-Disposition": "attachment; filename=devis-aida-" + b.id + ".pdf",
     "Content-Length": pdf.length
-  });
+  }));
   res.end(pdf);
 };
 
@@ -1112,6 +1164,7 @@ async function serveApi(req, res) {
       ? Object.fromEntries(url.searchParams)
       : await readBody(req);
   } catch (e) {
+    if (/volumineux/i.test(e.message)) return send(res, 413, { error: e.message });
     return send(res, 400, { error: e.message });
   }
 
@@ -1159,16 +1212,16 @@ function serveStatic(req, res) {
   if (pathname === "/favicon.ico") {
     fs.readFile(path.resolve(ROOT, "logo.svg"), (err, data) => {
       if (err) {
-        res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
+        res.writeHead(404, Object.assign({}, SEC_H, { "Content-Type": "text/html; charset=utf-8" }));
         return res.end("<h1>404</h1><p>Fichier introuvable.</p>");
       }
-      res.writeHead(200, { "Content-Type": "image/svg+xml", "Cache-Control": "no-store" });
+      res.writeHead(200, Object.assign({}, SEC_H, { "Content-Type": "image/svg+xml", "Cache-Control": "no-store" }));
       res.end(data);
     });
     return;
   }
   if (pathname === "/client.html") {
-    res.writeHead(302, { "Location": "/#contact" });
+    res.writeHead(302, Object.assign({}, SEC_H, { "Location": "/#contact" }));
     return res.end();
   }
   const file = path.resolve(ROOT, "." + pathname);
@@ -1177,14 +1230,14 @@ function serveStatic(req, res) {
   }
   fs.readFile(file, (err, data) => {
     if (err) {
-      res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
+      res.writeHead(404, Object.assign({}, SEC_H, { "Content-Type": "text/html; charset=utf-8" }));
       return res.end("<h1>404</h1><p>Fichier introuvable.</p>");
     }
     const mime = MIME[path.extname(file).toLowerCase()] || "application/octet-stream";
     const noCache = [".html", ".js", ".css", ".json"].includes(path.extname(file).toLowerCase());
     const headers = { "Content-Type": mime };
     if (noCache) headers["Cache-Control"] = "no-store";
-    res.writeHead(200, headers);
+    res.writeHead(200, Object.assign({}, SEC_H, headers));
     res.end(data);
   });
 }
